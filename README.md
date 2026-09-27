@@ -36,3 +36,19 @@
 ---
 
 ## 📊 Statistik Bot
+╔══════════════════════════════════════╗
+║      📊 YORA BOTZ v4.0 - STATISTIK   ║
+╚══════════════════════════════════════╝
+  🎮 Game         : 24 command
+  🎭 Fun          : 8 command
+  💰 Ekonomi      : 8 command
+  📊 Level        : 5 command
+  🛡️ Group Admin  : 12 command
+  📂 Menu         : 7 command
+  👑 Owner        : 22 command
+  ℹ️ Info         : 3 command
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  📌 TOTAL COMMAND : 89 command
+  🎁 TOTAL OTOMATIS: 12 fitur
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  🎯 TOTAL FITUR   : 101 fitur
