@@ -1,0 +1,16 @@
+{
+  "name": "yora-botz-plugin",
+  "version": "4.0.0",
+  "description": "Yora Botz - Plugin Architecture",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "author": "Cahyo Store",
+  "license": "MIT",
+  "dependencies": {
+    "@hapi/boom": "^10.0.1",
+    "@whiskeysockets/baileys": "6.7.24",
+    "pino": "^9.0.0"
+  }
+}
