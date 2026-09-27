@@ -1,0 +1,8 @@
+module.exports = {
+  name: 'menuowner', category: 'menu', aliases: ['menuown'],
+  async execute(sock, msg, args, ctx) {
+    const { config, from, isSenderOwner } = ctx;
+    if (!isSenderOwner()) return sock.sendMessage(from, { text: `❌ Hanya owner!\n\n👑 ${config.ownerName}\n📞 ${config.ownerNumber}` }, { quoted: msg });
+    await sock.sendMessage(from, { text: `╭━━━「 👑 *MENU OWNER* 」━━━\n\n╭─「 👥 *KELOLA USER* 」\n│ 🎫 ${config.prefix}addlimit @user <jml>\n│ 💰 ${config.prefix}addmoney @user <jml>\n│ ⭐ ${config.prefix}addpoint @user <jml>\n│ 🔧 ${config.prefix}setlimit @user <jml>\n│ 🔧 ${config.prefix}setmoney @user <jml>\n│ 🔄 ${config.prefix}resetuser @user\n│ 🔄 ${config.prefix}resetlevel @user\n│ 🔄 ${config.prefix}resetalllevel\n╰━━━━━━━━━━━━━━━━━━━━\n\n╭─「 📢 *KOMUNIKASI* 」\n│ 📢 ${config.prefix}broadcast <teks>\n╰━━━━━━━━━━━━━━━━━━━━\n\n╭─「 💾 *BACKUP & RESTORE* 」\n│ 💾 ${config.prefix}backup\n│ ♻️ ${config.prefix}restore\n│ ✅ ${config.prefix}restoreyes\n│ ❌ ${config.prefix}restoreno\n╰━━━━━━━━━━━━━━━━━━━━\n\n╭─「 🔒 *MODE BOT* 」\n│ 🏠 ${config.prefix}self\n│ 🌐 ${config.prefix}public\n│ ℹ️ ${config.prefix}mode\n╰━━━━━━━━━━━━━━━━━━━━\n\n╭─「 ⚙️ *EDIT CONFIG* 」\n│ ⚙️ ${config.prefix}showconfig\n│ 📋 ${config.prefix}getcfg <key>\n│ ✏️ ${config.prefix}setcfg <key> <value>\n│ 🔄 ${config.prefix}toggle <key>\n│ 🔄 ${config.prefix}reloadcfg\n╰━━━━━━━━━━━━━━━━━━━━\n\n╭─「 📁 *FILE MANAGER* 」\n│ 📖 ${config.prefix}readfile <path>\n│ 📂 ${config.prefix}listfiles <folder>\n╰━━━━━━━━━━━━━━━━━━━━\n\n╭─「 ℹ️ *INFO* 」\n│ ℹ️ ${config.prefix}botinfo\n╰━━━━━━━━━━━━━━━━━━━━` }, { quoted: msg });
+  }
+};
