@@ -1,55 +1,64 @@
-<!-- Banner -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!--                    YORA BOTZ - README                        -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+
 <div align="center">
 
-<img src="assets/logo.jpg" alt="Yora Botz Logo" width="600" />
+<img src="assets/logo.jpg" alt="Yora Botz Banner" width="100%" />
+
+<br />
 
 # 🤖 YORA BOTZ
 
 ### Bot WhatsApp Multi-Fitur Berbasis Plugin
 
-[![Version](https://img.shields.io/badge/version-4.0.0-blue.svg)](https://github.com/)
-[![Node](https://img.shields.io/badge/node-%3E%3D18.0.0-green.svg)](https://nodejs.org/)
-[![Baileys](https://img.shields.io/badge/baileys-6.7.24-purple.svg)](https://github.com/WhiskeySockets/Baileys)
-[![Plugins](https://img.shields.io/badge/plugins-89-orange.svg)](https://github.com/)
-[![License](https://img.shields.io/badge/license-MIT-yellow.svg)](LICENSE)
+**Modern • Modular • Powerful**
 
-**Bot WhatsApp dengan arsitektur plugin modern — 89 command, 12 fitur otomatis, dan mudah dikembangkan.**
+[![Version](https://img.shields.io/badge/version-4.0.0-5865F2?style=for-the-badge&logo=github)](https://github.com/bangcahyo/YoraBotz)
+[![Node](https://img.shields.io/badge/node-%3E%3D18.0.0-339933?style=for-the-badge&logo=node.js)](https://nodejs.org/)
+[![Baileys](https://img.shields.io/badge/baileys-6.7.24-9146FF?style=for-the-badge)](https://github.com/WhiskeySockets/Baileys)
+[![Plugins](https://img.shields.io/badge/plugins-89-FF6B6B?style=for-the-badge)](https://github.com/)
+[![Features](https://img.shields.io/badge/features-101-FFD93D?style=for-the-badge)](https://github.com/)
+[![License](https://img.shields.io/badge/license-MIT-00C853?style=for-the-badge)](LICENSE)
 
-[🌐 Website](https://fityorastore.netlify.app/) • [💬 Grup Resmi](https://chat.whatsapp.com/GRj7DL7U8w44CTmGcFC5v2) • [📞 Owner](https://wa.me/628139525985)
+<br />
+
+[🌐 Website](https://fityorastore.netlify.app/) •
+[💬 Grup Resmi](https://chat.whatsapp.com/GRj7DL7U8w44CTmGcFC5v2) •
+[📞 Owner](https://wa.me/628139525985) •
+[⭐ Star](https://github.com/bangcahyo/YoraBotz)
 
 </div>
 
 ---
 
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!--                        TENTANG                               -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+
 ## 📖 Tentang Bot
 
-**Yora Botz** adalah bot WhatsApp modern yang dibangun dengan **arsitektur plugin** — setiap command ada di file terpisah, sehingga mudah dikembangkan, di-debug, dan di-maintain.
+**Yora Botz** adalah bot WhatsApp modern dengan **arsitektur plugin** — setiap command tersimpan di file terpisah, membuatnya mudah dikembangkan, di-debug, dan di-maintain.
 
-### 🎯 Kenapa Plugin Architecture?
+Dibangun dengan [Baileys](https://github.com/WhiskeySockets/Baileys), bot ini menawarkan **89 command** dan **12 fitur otomatis** yang siap pakai untuk mengelola grup dan menghibur member.
 
-- ✅ **Modular** — Setiap command di file sendiri
-- ✅ **Mudah dikembangkan** — Tambah fitur = buat file baru
-- ✅ **Aman** — 1 plugin error tidak crash bot
-- ✅ **Rapi** — Struktur folder terorganisir
-- ✅ **Scalable** — Siap untuk 100+ fitur
+### 🎯 Kenapa Memilih Yora Botz?
+
+| 🧩 | **Modular** — Setiap command di file sendiri |
+|----|---------------------------------------------|
+| 🚀 | **Ringan** — Tanpa browser, hemat resource |
+| 🔐 | **Pairing Code** — Login tanpa scan QR |
+| 💾 | **Auto Save Session** — Restart tanpa pairing ulang |
+| 🎮 | **24 Game** — Lengkap dengan sistem taruhan |
+| 📊 | **Level System** — Otomatis dari aktivitas chat |
+| 🛡️ | **Group Manager** — Anti-link, anti-spam, welcome |
+| 🎤 | **Voice Note** — Menu & owner voice |
+| ⚙️ | **Config Editor** — Edit config dari WhatsApp |
 
 ---
 
-## 📊 Statistik Bot
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!--                       STATISTIK                              -->
+<!-- ═══════════════════════════════════════════════════════════ -->
 
-╔══════════════════════════════════════╗
-║      📊 YORA BOTZ v4.0 - STATISTIK   ║
-╚══════════════════════════════════════╝
-  🎮 Game         : 24 command
-  🎭 Fun          : 8 command
-  💰 Ekonomi      : 8 command
-  📊 Level        : 5 command
-  🛡️ Group Admin  : 12 command
-  📂 Menu         : 7 command
-  👑 Owner        : 22 command
-  ℹ️ Info         : 3 command
-  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  📌 TOTAL COMMAND : 89 command
-  🎁 TOTAL OTOMATIS: 12 fitur
-  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  🎯 TOTAL FITUR   : 101 fitur
+## 📊 Statistik
