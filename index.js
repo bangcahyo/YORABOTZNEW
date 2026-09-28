@@ -15,12 +15,12 @@ const pino = require('pino');
 const fs = require('fs');
 const path = require('path');
 const config = require('./config');
-
+const fetch = (...args) => import('node-fetch').then(({default: f}) => f(...args));
 // ==================== LOAD LIB ====================
 const database = require('./lib/database');
 const helper = require('./lib/helper');
 const level = require('./lib/level');
-const sender = require('./lib/sender');
+const { sendVoiceNote, sendImageCaption } = require('./lib/sender');
 
 const {
   getUser, updateUser, loadDB, saveDB,
@@ -158,8 +158,8 @@ function buildContext(sock, msg, args) {
     // Level
     ...level,
     // Sender
-    sendVoiceNote: sender.sendVoiceNote,
-    sendImageCaption: sender.sendImageCaption,
+    sendVoiceNote: sendVoiceNote, 
+    sendImageCaption: sendImageCaption, 
   };
 }
 
@@ -384,6 +384,163 @@ async function startBot() {
           return;
         }
       }
+      // ==================== AUTO DETECT JAWABAN GAME ====================
+      if (!text.startsWith(config.prefix) && gameState[from]) {
+        const game = gameState[from];
+        const lowerText = text.trim().toLowerCase();
+
+        if (game.sender === sender) {
+          if (game.game === 'tebakangka') {
+            const angka = parseInt(lowerText);
+            if (!isNaN(angka)) {
+              if (angka === game.angka) {
+                clearGameTimeout(from);
+                const u = getUser(sender);
+                updateUser(sender, { point: u.point + 5, money: u.money + 500 });
+                delete gameState[from];
+                await sock.sendMessage(from, { text: `🎉 *BENAR!*\nAngka: ${game.angka}\n\n+5 Point\n+Rp 500` }, { quoted: msg });
+                return;
+              } else {
+                await sock.sendMessage(from, { text: `😢 *SALAH!* Coba lagi atau ketik *${config.prefix}nyerah*` }, { quoted: msg });
+                return;
+              }
+            }
+          }
+
+          else if (game.game === 'quiz') {
+            if (lowerText === game.jawab) {
+              clearGameTimeout(from);
+              const u = getUser(sender);
+              updateUser(sender, { point: u.point + 10, money: u.money + 1000 });
+              delete gameState[from];
+              await sock.sendMessage(from, { text: `🎉 *BENAR!*\n\n+10 Point\n+Rp 1.000` }, { quoted: msg });
+              return;
+            } else {
+              await sock.sendMessage(from, { text: `😢 *SALAH!* Coba lagi atau ketik *${config.prefix}nyerah*` }, { quoted: msg });
+              return;
+            }
+          }
+
+          else if (game.game === 'tebakkata') {
+            if (lowerText === game.jawab) {
+              clearGameTimeout(from);
+              const u = getUser(sender);
+              updateUser(sender, { money: u.money + 750, point: u.point + 3 });
+              delete gameState[from];
+              await sock.sendMessage(from, { text: `🎉 *BENAR!*\n\n+Rp 750\n+3 Point` }, { quoted: msg });
+              return;
+            } else {
+              await sock.sendMessage(from, { text: `😢 *SALAH!* Coba lagi atau ketik *${config.prefix}nyerah*` }, { quoted: msg });
+              return;
+            }
+          }
+          else if (game.game === 'tebakgambar' || game.game === 'tebakpemainbola' || game.game === 'tebakhewan' || game.game === 'tebakibukota') {
+            const accepted = Array.isArray(game.jawab) ? game.jawab : [game.jawab];
+            if (accepted.some(j => lowerText === j || lowerText.includes(j))) {
+              clearGameTimeout(from);
+              const u = getUser(sender);
+              updateUser(sender, { money: u.money + 800, point: u.point + 3 });
+              delete gameState[from];
+              await sock.sendMessage(from, { text: `🎉 *BENAR!*\n\n+Rp 800\n+3 Point` }, { quoted: msg });
+              return;
+            } else {
+              await sock.sendMessage(from, { text: `😢 *SALAH!* Coba lagi atau ketik *${config.prefix}nyerah*` }, { quoted: msg });
+              return;
+            }
+          }
+
+          else if (game.game === 'tebaklagu') {
+            if (game.jawab.some(j => lowerText.includes(j))) {
+              clearGameTimeout(from);
+              const u = getUser(sender);
+              updateUser(sender, { money: u.money + 900, point: u.point + 4 });
+              delete gameState[from];
+              await sock.sendMessage(from, { text: `🎉 *BENAR!*\n\n+Rp 900\n+4 Point` }, { quoted: msg });
+              return;
+            } else {
+              await sock.sendMessage(from, { text: `😢 *SALAH!* Coba lagi atau ketik *${config.prefix}nyerah*` }, { quoted: msg });
+              return;
+            }
+          }
+
+          else if (game.game === 'tebakfilm') {
+            if (game.jawab.some(j => lowerText.includes(j))) {
+              clearGameTimeout(from);
+              const u = getUser(sender);
+              updateUser(sender, { money: u.money + 1000, point: u.point + 5 });
+              delete gameState[from];
+              await sock.sendMessage(from, { text: `🎉 *BENAR!*\n\n+Rp 1.000\n+5 Point` }, { quoted: msg });
+              return;
+            } else {
+              await sock.sendMessage(from, { text: `😢 *SALAH!* Coba lagi atau ketik *${config.prefix}nyerah*` }, { quoted: msg });
+              return;
+            }
+          }
+          else if (game.game === 'math') {
+            const angka = parseInt(lowerText);
+            if (!isNaN(angka)) {
+              if (angka === game.jawab) {
+                clearGameTimeout(from);
+                const u = getUser(sender);
+                updateUser(sender, { money: u.money + 500, point: u.point + 2 });
+                delete gameState[from];
+                await sock.sendMessage(from, { text: `🎉 *BENAR!*\n\n+Rp 500\n+2 Point` }, { quoted: msg });
+                return;
+              } else {
+                await sock.sendMessage(from, { text: `😢 *SALAH!* Coba lagi atau ketik *${config.prefix}nyerah*` }, { quoted: msg });
+                return;
+              }
+            }
+          }
+
+          else if (game.game === 'tebakemoji') {
+            const cocok = game.jawab.some(j => lowerText.includes(j));
+            if (cocok) {
+              clearGameTimeout(from);
+              const u = getUser(sender);
+              updateUser(sender, { money: u.money + 800, point: u.point + 3 });
+              delete gameState[from];
+              await sock.sendMessage(from, { text: `🎉 *BENAR!*\n\n+Rp 800\n+3 Point` }, { quoted: msg });
+              return;
+            } else {
+              await sock.sendMessage(from, { text: `😢 *SALAH!* Coba lagi atau ketik *${config.prefix}nyerah*` }, { quoted: msg });
+              return;
+            }
+          }
+
+          else if (game.game === 'hangman') {
+            if (lowerText.length === 1 && /[a-z]/.test(lowerText)) {
+              const huruf = lowerText;
+              if (game.tebakan.includes(huruf)) {
+                await sock.sendMessage(from, { text: '❌ Sudah ditebak!' }, { quoted: msg });
+                return;
+              }
+              game.tebakan.push(huruf);
+              if (!game.kata.includes(huruf)) game.nyawa--;
+              const tampil = game.kata.split('').map(c => game.tebakan.includes(c) ? c : '_').join(' ');
+              const nyawaBar = '❤️'.repeat(game.nyawa) + '🖤'.repeat(6 - game.nyawa);
+              
+              if (game.nyawa <= 0) {
+                clearGameTimeout(from);
+                delete gameState[from];
+                await sock.sendMessage(from, { text: `💀 *GAME OVER!*\nKata: *${game.kata}*` }, { quoted: msg });
+                return;
+              }
+              if (!tampil.includes('_')) {
+                clearGameTimeout(from);
+                const u = getUser(sender);
+                updateUser(sender, { money: u.money + 1000, point: u.point + 5 });
+                delete gameState[from];
+                await sock.sendMessage(from, { text: `🎉 *MENANG!*\nKata: *${game.kata}*\n\n+Rp 1.000\n+5 Point` }, { quoted: msg });
+                return;
+              }
+              await sock.sendMessage(from, { text: `🎯 *HANGMAN*\n\nKata: ${tampil}\nNyawa: ${nyawaBar}\nHuruf: ${game.tebakan.join(', ')}` }, { quoted: msg });
+              return;
+            }
+          }
+        }
+      }
+      // ==================== END AUTO DETECT ====================
 
       // Random question (tanpa prefix)
       if (!text.startsWith(config.prefix)) {
@@ -431,7 +588,7 @@ async function startBot() {
       const user = getUser(sender);
       const isOwnerUser = isSenderOwner(msg, sender);
       const noLimitCategories = ['menu', 'info', 'owner', 'level', 'group'];
-      const noLimitCommands = ['menu','help','profile','profil','owner','limit','point','uang','daily','shop','level','lvl','rank','leaderboard','tqto','backup','restore','showconfig','getcfg','setcfg','toggle','reloadcfg','readfile','listfiles','nyerah'];
+      const noLimitCommands = ['menu','help','menugame','menugames','menufun','menuhiburan','menuekonomi','menueco','menulevel','menugroup','menuadmin','menuowner','menuown','profile','profil','owner','info','botinfo','mode','self','public','limit','point','uang','money','daily','shop','addlimit','addmoney','addpoint','setlimit','setmoney','resetuser','broadcast','antilink','welcome','setwelcome','setgoodbye','kick','promote','demote','tagall','groupinfo','antispam','unmute','tqto','thanks','credit','group','grup','grupresmi','id','groupid','cekid','backup','backupdb','restore','restoredb','restoreyes','restoreno','pantun','puisi','quote','motivasi','katabijak','kata','bijak','level','lvl','rank','peringkat','leaderboard','lb','top','resetlevel','resetalllevel','getcfg','getconfig','setcfg','setconfig','reloadcfg','reloadconfig','reload','showconfig','showcfg','readfile','listfiles','ls','toggle','nyerah','menyerah','giveup','savefile','reloadplugins','reloadplugin','reloadp','restartbot','restart','rebootbot','sticker','stiker','s','toimg','toimage','emojimix','emix'];
 
       if (!noLimitCommands.includes(command) && !isOwnerUser && !noLimitCategories.includes(plugin.category)) {
         if (user.limit <= 0) {
