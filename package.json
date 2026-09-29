@@ -1,7 +1,7 @@
 {
-  "name": "yora-botz-plugin",
-  "version": "4.2.0",
-  "description": "Yora Botz - Plugin Architecture",
+  "name": "yora-botz",
+  "version": "6.0.0",
+  "description": "Yora Botz - Multi-Fitur WhatsApp Bot",
   "main": "index.js",
   "scripts": {
     "start": "node index.js"
@@ -12,8 +12,7 @@
     "@hapi/boom": "^10.0.1",
     "@whiskeysockets/baileys": "6.7.24",
     "pino": "^9.0.0",
-    "sharp": "^0.33.5",
-    "wa-sticker-formatter": "^4.4.4",
-    "btch-downloader": "^6.3.6"
+    "sharp": "^0.32.6",
+    "wa-sticker-formatter": "^4.4.4"
   }
 }

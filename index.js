@@ -1,6 +1,6 @@
 // ============================================================
-//   YORA BOTZ v4.0 - PLUGIN ARCHITECTURE
-//   Owner: Cahyo Store (08139525985)
+//   YORA BOTZ v6.0 — Pairing Code Fixed
+//   Baileys 6.7.24
 // ============================================================
 
 const {
@@ -9,18 +9,18 @@ const {
   DisconnectReason,
   fetchLatestBaileysVersion,
   getContentType,
+  downloadMediaMessage,
 } = require('@whiskeysockets/baileys');
 const { Boom } = require('@hapi/boom');
 const pino = require('pino');
 const fs = require('fs');
 const path = require('path');
 const config = require('./config');
-const fetch = (...args) => import('node-fetch').then(({default: f}) => f(...args));
-// ==================== LOAD LIB ====================
+
+// ============ LOAD LIB ============
 const database = require('./lib/database');
 const helper = require('./lib/helper');
 const level = require('./lib/level');
-const { sendVoiceNote, sendImageCaption } = require('./lib/sender');
 
 const {
   getUser, updateUser, loadDB, saveDB,
@@ -35,289 +35,222 @@ const {
 
 config.botMode = loadMode();
 
-// ==================== GAME STATE ====================
+// ============ FOLDER ============
+['database', 'session', 'assets'].forEach(f => {
+  const p = path.join(__dirname, f);
+  if (!fs.existsSync(p)) fs.mkdirSync(p, { recursive: true });
+});
+
+// ============ GAME STATE ============
 const gameState = {};
 const gameTimers = {};
 
-function setGameTimeout(roomId, onTimeout) {
+function setGameTimeout(roomId, cb) {
   clearGameTimeout(roomId);
   gameTimers[roomId] = setTimeout(async () => {
     if (gameState[roomId]) {
-      try { await onTimeout(); } catch {}
+      try { await cb(); } catch {}
       delete gameState[roomId];
     }
     delete gameTimers[roomId];
   }, config.gameTimeout || 60000);
 }
 function clearGameTimeout(roomId) {
-  if (gameTimers[roomId]) {
-    clearTimeout(gameTimers[roomId]);
-    delete gameTimers[roomId];
-  }
+  if (gameTimers[roomId]) { clearTimeout(gameTimers[roomId]); delete gameTimers[roomId]; }
 }
 
-// ==================== LOAD PLUGINS ====================
-const plugins = new Map();       // command → plugin
-const pluginList = [];           // daftar semua plugin
-const categoryList = {};         // kategori → jumlah
+// ============ LOAD PLUGINS ============
+const plugins = new Map();
+const pluginList = [];
 
 function loadPlugins() {
-  const pluginDir = path.join(__dirname, 'plugins');
-  if (!fs.existsSync(pluginDir)) {
-    console.log('⚠️ Folder plugins/ tidak ada!');
-    return;
-  }
+  const dir = path.join(__dirname, 'plugins');
+  if (!fs.existsSync(dir)) return console.log('⚠️ Folder plugins/ tidak ada');
 
-  const categories = fs.readdirSync(pluginDir).filter(f => 
-    fs.statSync(path.join(pluginDir, f)).isDirectory()
-  );
+  const cats = fs.readdirSync(dir).filter(f => fs.statSync(path.join(dir, f)).isDirectory());
+  console.log('\n╔══════════════════════════════════╗');
+  console.log('║      📦 PLUGINS BERHASIL DIMUAT    ║');
+  console.log('╚══════════════════════════════════╝');
 
-  for (const category of categories) {
-    const categoryPath = path.join(pluginDir, category);
-    const files = fs.readdirSync(categoryPath).filter(f => f.endsWith('.js'));
-
+  for (const cat of cats) {
+    const catPath = path.join(dir, cat);
+    const files = fs.readdirSync(catPath).filter(f => f.endsWith('.js'));
     let count = 0;
     for (const file of files) {
       try {
-        const plugin = require(path.join(categoryPath, file));
-        if (!plugin.name || !plugin.execute) {
-          console.log(`  ⚠️ Skip ${category}/${file}: format tidak valid`);
-          continue;
-        }
-
-        plugin.category = plugin.category || category;
-        plugin.aliases = plugin.aliases || [];
-        pluginList.push(plugin);
-
-        // Daftarkan nama utama
-        plugins.set(plugin.name.toLowerCase(), plugin);
-
-        // Daftarkan alias
-        for (const alias of plugin.aliases) {
-          plugins.set(alias.toLowerCase(), plugin);
-        }
+        delete require.cache[require.resolve(path.join(catPath, file))];
+        const p = require(path.join(catPath, file));
+        if (!p.name || !p.execute) continue;
+        p.category = p.category || cat;
+        p.aliases = p.aliases || [];
+        pluginList.push(p);
+        plugins.set(p.name.toLowerCase(), p);
+        p.aliases.forEach(a => plugins.set(a.toLowerCase(), p));
         count++;
       } catch (err) {
-        console.log(`  ❌ Error load ${category}/${file}: ${err.message}`);
+        console.log(`  ❌ ${cat}/${file}: ${err.message}`);
       }
     }
-    categoryList[category] = count;
-  }
-
-  console.log('\n╔══════════════════════════════════════╗');
-  console.log('║      📦 PLUGINS BERHASIL DIMUAT       ║');
-  console.log('╚══════════════════════════════════════╝');
-  for (const [cat, count] of Object.entries(categoryList)) {
-    console.log(`  📁 ${cat.padEnd(10)} : ${count} plugin`);
+    if (count > 0) console.log(`  📁 ${cat.padEnd(10)} : ${count} plugin`);
   }
   console.log(`  📊 Total    : ${pluginList.length} plugin\n`);
 }
-loadPlugins();
 
-// ==================== CONTEXT UNTUK PLUGIN ====================
+// ============ BUILD CONTEXT ============
 function buildContext(sock, msg, args) {
   const from = msg.key.remoteJid;
-  const sender = msg.key.participant || msg.key.remoteJid;
+  const sender = msg.key.participantAlt || msg.key.participant || msg.key.remoteJidAlt || msg.key.remoteJid;
   const senderNumber = sender.split('@')[0].replace(/[^0-9]/g, '');
   const pushName = msg.pushName || 'User';
   const mentioned = msg.message.extendedTextMessage?.contextInfo?.mentionedJid || [];
   const user = getUser(sender);
 
   return {
-    config,
-    from,
-    sender,
-    senderNumber,
-    pushName,
-    mentioned,
-    user,
-    args,
-    msg,
-    sock,
-    // Functions
-    getUser,
-    updateUser,
-    loadDB,
-    saveDB,
-    loadGroups,
-    getGroupSettings,
-    updateGroupSettings,
-    saveMode,
-    isOwner,
-    isSenderOwner: () => isSenderOwner(msg, sender),
-    isGroup,
-    isGroupAllowed,
-    random,
-    formatMoney,
-    checkSpam,
-    // Game state
-    gameState,
-    gameTimers,
-    setGameTimeout,
-    clearGameTimeout,
-    // Level
+    config, from, sender, senderNumber, pushName, mentioned, user, args, msg, sock,
+    downloadMediaMessage,
+    getUser, updateUser, loadDB, saveDB,
+    loadGroups, saveGroups, getGroupSettings, updateGroupSettings, saveMode,
+    isOwner, isSenderOwner: () => isSenderOwner(msg, sender), isGroup,
+    isGroupAllowed, random, formatMoney, checkSpam, spamTracker,
+    gameState, gameTimers, setGameTimeout, clearGameTimeout,
     ...level,
-    // Sender
-    sendVoiceNote: sendVoiceNote, 
-    sendImageCaption: sendImageCaption, 
   };
 }
 
-// ==================== SESSION CHECK ====================
-function checkSessionExists() {
-  try {
-    const SESSION_PATH = path.join(__dirname, config.sessionName);
-    const credsPath = path.join(SESSION_PATH, 'creds.json');
-    if (fs.existsSync(credsPath)) {
-      const creds = JSON.parse(fs.readFileSync(credsPath, 'utf-8'));
-      if (creds.me && creds.me.id) return { exists: true, registered: true, me: creds.me.id };
-      return { exists: true, registered: false, me: null };
-    }
-    return { exists: false, registered: false, me: null };
-  } catch {
-    return { exists: false, registered: false, me: null };
-  }
-}
-
-// ==================== MAIN BOT ====================
+// ============ START BOT ============
 async function startBot() {
-  const SESSION_PATH = path.join(__dirname, config.sessionName);
-  const sessionInfo = checkSessionExists();
-
-  if (sessionInfo.registered) {
-    console.log('\n╔══════════════════════════════════════╗');
-    console.log('║   📁 SESSION DITEMUKAN & VALID       ║');
-    console.log('╚══════════════════════════════════════╝');
-    console.log(`✅ Bot sudah pernah login: ${sessionInfo.me}`);
-    console.log('🚀 Tidak perlu pairing, langsung connect...\n');
-  } else if (sessionInfo.exists) {
-    console.log('\n⚠️ Session ada tapi belum terdaftar.\n');
-  } else {
-    console.log('\n📭 Belum ada session. Akan minta pairing code.\n');
-  }
-
   const { state, saveCreds } = await useMultiFileAuthState(config.sessionName);
   const { version } = await fetchLatestBaileysVersion();
+
+  console.log(`📡 Baileys version: ${version.join('.')}`);
 
   const sock = makeWASocket({
     version,
     logger: pino({ level: 'silent' }),
     printQRInTerminal: false,
     auth: state,
-    browser: ['Mac OS', 'Chrome', '14.4.1'],
-    getMessage: async () => ({ conversation: '' }),
+    browser: ['Ubuntu', 'Chrome', '20.0.04'],
     syncFullHistory: false,
     markOnlineOnConnect: true,
+    getMessage: async () => ({ conversation: '' }),
   });
 
-  sock.ev.on('creds.update', async () => {
-    try { await saveCreds(); console.log('💾 Session tersimpan'); } catch {}
-  });
+  sock.ev.on('creds.update', saveCreds);
 
-  // ==================== PAIRING CODE ====================
-  if (!sock.authState.creds.registered) {
-    console.log('╔══════════════════════════════════════╗');
-    console.log('║   🔐 PAIRING CODE WHATSAPP BOT       ║');
-    console.log('╚══════════════════════════════════════╝\n');
+  // ============================================================
+  //   PAIRING CODE — Trigger di event 'qr' (SESUAI DOKUMENTASI)
+  // ============================================================
+  let codeRequested = false;
 
-    let phoneNumber = String(config.botNumber).replace(/[^0-9]/g, '');
-    if (phoneNumber.startsWith('0')) phoneNumber = '62' + phoneNumber.slice(1);
+  sock.ev.on('connection.update', async (update) => {
+    const { connection, lastDisconnect, qr } = update;
 
-    if (!phoneNumber || phoneNumber.length < 10 || phoneNumber.length > 15) {
-      console.error('❌ Nomor bot tidak valid!');
-      process.exit(1);
+    // Trigger pairing code DI EVENT 'qr', bukan 'connecting'
+    if (qr && !sock.authState.creds.registered && !codeRequested) {
+      codeRequested = true;
+
+      console.log('\n╔══════════════════════════════════╗');
+      console.log('║   🔐 PAIRING CODE BOT            ║');
+      console.log('╚══════════════════════════════════╝\n');
+
+      let phone = String(config.botNumber || '').replace(/[^0-9]/g, '');
+      if (phone.startsWith('0')) phone = '62' + phone.slice(1);
+
+      if (phone.length < 10 || phone.length > 15) {
+        console.log('❌ Nomor bot tidak valid di config.js!');
+        process.exit(1);
+      }
+
+      console.log(`📞 Nomor bot: ${phone}`);
+      console.log('⏳ Tunggu 5 detik...\n');
+
+      // Delay 5 detik sebelum request code
+      setTimeout(async () => {
+        try {
+          const code = await sock.requestPairingCode(phone);
+          const fmt = code.match(/.{1,4}/g)?.join('-') || code;
+
+          console.log('\n╔══════════════════════════════════╗');
+          console.log('║   ✅ PAIRING CODE BERHASIL        ║');
+          console.log('╚══════════════════════════════════╝');
+          console.log(`\n   📱 Nomor: ${phone}`);
+          console.log(`   🔑 Kode : ${fmt}\n`);
+          console.log('══════════════════════════════════');
+          console.log('📌 CARA PAKAI:');
+          console.log('   1. Buka WhatsApp di HP nomor bot');
+          console.log('   2. Pengaturan → Perangkat Tertaut');
+          console.log('   3. Tautkan Perangkat');
+          console.log('   4. Pilih "Tautkan dengan nomor telepon saja"');
+          console.log('   5. Masukkan kode: ' + fmt);
+          console.log('   ⏱️ Kode berlaku 60 detik — cepat!\n');
+        } catch (e) {
+          console.log('❌ Gagal pairing:', e.message);
+          console.log('💡 Restart bot untuk coba lagi.\n');
+        }
+      }, 5000);
     }
 
-    let codeRequested = false;
-    const requestCode = async () => {
-      try {
-        const pairingCode = await sock.requestPairingCode(phoneNumber);
-        const formatted = pairingCode.match(/.{1,4}/g)?.join('-') || pairingCode;
-        console.log(`\n   📱 Nomor Bot : ${phoneNumber}`);
-        console.log(`   🔑 Kode      : ${formatted}\n`);
-        console.log('📌 Masukkan kode ke WhatsApp (tanpa tanda -)\n');
-      } catch (err) {
-        console.error('❌ Gagal:', err.message);
-      }
-    };
-    const listener = (update) => {
-      if (update.connection === 'connecting' && !codeRequested) {
-        codeRequested = true;
-        sock.ev.off('connection.update', listener);
-        setTimeout(requestCode, 3000);
-      }
-    };
-    sock.ev.on('connection.update', listener);
-  }
-
-  // ==================== CONNECTION ====================
-  sock.ev.on('connection.update', (update) => {
-    const { connection, lastDisconnect } = update;
+    // Handle connection close
     if (connection === 'close') {
-      const statusCode = new Boom(lastDisconnect?.error)?.output?.statusCode;
-      if (statusCode === DisconnectReason.loggedOut) {
-        try { fs.rmSync(SESSION_PATH, { recursive: true, force: true }); } catch {}
+      const code = new Boom(lastDisconnect?.error)?.output?.statusCode;
+      if (code === DisconnectReason.loggedOut) {
+        console.log('⚠️ Bot logout. Hapus session & pairing ulang.');
+        fs.rmSync(path.join(__dirname, config.sessionName), { recursive: true, force: true });
         process.exit(0);
       } else {
-        console.log(`🔄 Reconnect dalam 5 detik (${statusCode})...`);
+        console.log(`🔄 Reconnect (code ${code}) dalam 5 detik...`);
         setTimeout(() => startBot(), 5000);
       }
     } else if (connection === 'open') {
-      console.log('\n╔══════════════════════════════════════╗');
-      console.log('║      ✅ BOT BERHASIL TERHUBUNG!       ║');
-      console.log('╚══════════════════════════════════════╝');
-      console.log(`🤖 Bot      : ${config.botName}`);
-      console.log(`📞 Nomor    : ${config.botNumber}`);
-      console.log(`📌 Mode     : ${config.botMode.toUpperCase()}`);
-      console.log(`📦 Plugins  : ${pluginList.length}`);
-      console.log('════════════════════════════════════════\n');
+      console.log('\n╔══════════════════════════════════╗');
+      console.log('║   ✅ BOT BERHASIL TERHUBUNG!      ║');
+      console.log('╚══════════════════════════════════╝');
+      console.log(`🤖 ${config.botName}`);
+      console.log(`📞 ${config.botNumber}`);
+      console.log(`📌 Mode: ${config.botMode.toUpperCase()}`);
+      console.log(`📦 Plugins: ${pluginList.length}\n`);
     }
   });
 
-  // ==================== GROUP PARTICIPANTS ====================
+  // ==================== GROUP EVENTS ====================
   sock.ev.on('group-participants.update', async (update) => {
     try {
       const { id, participants, action } = update;
       const botJid = sock.user.id.split(':')[0] + '@s.whatsapp.net';
-      const botWasAdded = participants.some(p => p === botJid);
+      const botAdded = participants.some(p => p === botJid);
 
-      if (action === 'add' && botWasAdded) {
-        if (!isGroupAllowed(id)) {
-          let groupName = 'Grup';
-          try { const gm = await sock.groupMetadata(id); groupName = gm.subject; } catch {}
-          try {
-            await sock.sendMessage(id, {
-              text: `❌ *AKSES DITOLAK*\n\nBot ini hanya untuk grup resmi.\n\nOwner: ${config.ownerNumber}\n\nBot akan keluar dalam 5 detik...`,
-            });
-            await new Promise(r => setTimeout(r, 5000));
-          } catch {}
-          try {
-            await sock.groupLeave(id);
-            try {
-              await sock.sendMessage(config.ownerNumber + '@s.whatsapp.net', {
-                text: `🔔 Bot keluar dari grup non-whitelist:\n${groupName}\nID: ${id}`,
-              });
-            } catch {}
-          } catch {}
-        }
+      if (action === 'add' && botAdded && !isGroupAllowed(id)) {
+        let name = 'Grup';
+        try { name = (await sock.groupMetadata(id)).subject; } catch {}
+        try {
+          await sock.sendMessage(id, { text: `❌ Bot hanya untuk grup resmi.\n\nOwner: ${config.ownerNumber}\n\nBot keluar dalam 5 detik...` });
+          await new Promise(r => setTimeout(r, 5000));
+        } catch {}
+        try { await sock.groupLeave(id); } catch {}
+        try {
+          await sock.sendMessage(config.ownerNumber + '@s.whatsapp.net', {
+            text: `🔔 Bot keluar dari grup non-whitelist:\n${name}\nID: ${id}`,
+          });
+        } catch {}
+        return;
       }
 
-      const groupSettings = getGroupSettings(id);
+      const gs = getGroupSettings(id);
       let groupName = '';
-      try { const gm = await sock.groupMetadata(id); groupName = gm.subject; } catch { return; }
+      try { groupName = (await sock.groupMetadata(id)).subject; } catch { return; }
 
-      for (const participant of participants) {
-        if (participant === botJid) continue;
-        const p = participant.split('@')[0];
-        if (action === 'add' && groupSettings.welcome) {
-          const teks = groupSettings.welcomeText.replace('@user', `@${p}`).replace('@group', groupName);
-          await sock.sendMessage(id, { text: `👋 *WELCOME*\n\n${teks}`, mentions: [participant] });
-        } else if (action === 'remove' && groupSettings.welcome) {
-          const teks = groupSettings.goodbyeText.replace('@user', `@${p}`).replace('@group', groupName);
-          await sock.sendMessage(id, { text: `👋 *GOODBYE*\n\n${teks}`, mentions: [participant] });
+      for (const p of participants) {
+        if (p === botJid) continue;
+        const num = p.split('@')[0];
+        if (action === 'add' && gs.welcome) {
+          const t = gs.welcomeText.replace('@user', `@${num}`).replace('@group', groupName);
+          await sock.sendMessage(id, { text: `👋 *WELCOME*\n\n${t}`, mentions: [p] });
+        } else if (action === 'remove' && gs.welcome) {
+          const t = gs.goodbyeText.replace('@user', `@${num}`).replace('@group', groupName);
+          await sock.sendMessage(id, { text: `👋 *GOODBYE*\n\n${t}`, mentions: [p] });
         }
       }
-    } catch (e) { console.error('Group update error:', e.message); }
+    } catch (e) { console.error('Group event:', e.message); }
   });
 
   // ==================== MESSAGES ====================
@@ -328,28 +261,26 @@ async function startBot() {
       if (msg.key.fromMe) return;
 
       const from = msg.key.remoteJid;
-      const sender = msg.key.participant || msg.key.remoteJid;
+      const sender = msg.key.participantAlt || msg.key.participant || msg.key.remoteJidAlt || msg.key.remoteJid;
       const senderNumber = sender.split('@')[0].replace(/[^0-9]/g, '');
+      const pushName = msg.pushName || 'User';
+      const mentioned = msg.message.extendedTextMessage?.contextInfo?.mentionedJid || [];
       const type = getContentType(msg.message);
 
-      let text = '';
-      if (type === 'conversation') text = msg.message.conversation;
-      else if (type === 'extendedTextMessage') text = msg.message.extendedTextMessage.text;
-      else if (type === 'imageMessage') text = msg.message.imageMessage.caption || '';
-      else if (type === 'videoMessage') text = msg.message.videoMessage.caption || '';
-      if (!text) return;
-
-      // Mode self check
+      // SELF MODE
       if (config.botMode === 'self' && !isSenderOwner(msg, sender)) return;
 
-      // Anti-link
+      // ANTI-LINK
       if (isGroup(from)) {
         const gs = getGroupSettings(from);
         if (gs.antilink) {
-          const linkRegex = /(https?:\/\/[^\s]+|wa\.me\/[^\s]+|chat\.whatsapp\.com\/[^\s]+)/gi;
-          if (linkRegex.test(text)) {
+          let textCek = '';
+          if (type === 'conversation') textCek = msg.message.conversation;
+          else if (type === 'extendedTextMessage') textCek = msg.message.extendedTextMessage.text || '';
+          const linkRe = /(https?:\/\/[^\s]+|wa\.me\/[^\s]+|chat\.whatsapp\.com\/[^\s]+)/gi;
+          if (textCek && linkRe.test(textCek)) {
             const gm = await sock.groupMetadata(from);
-            const isAdmin = gm.participants.find((p) => p.id === sender)?.admin;
+            const isAdmin = gm.participants.find(p => p.id === sender)?.admin;
             if (!isAdmin && !isSenderOwner(msg, sender)) {
               try { await sock.sendMessage(from, { delete: msg.key }); } catch {}
               await sock.sendMessage(from, {
@@ -362,197 +293,55 @@ async function startBot() {
         }
       }
 
-      // Anti-spam
+      // ANTI-SPAM
       if (isGroup(from) && !isSenderOwner(msg, sender)) {
-        const spamCheck = checkSpam(sender);
-        if (spamCheck.spam) {
+        const sc = checkSpam(sender);
+        if (sc.spam) {
           try { await sock.sendMessage(from, { delete: msg.key }); } catch {}
-          if (spamCheck.muted) {
+          if (sc.muted) {
             if (!spamTracker[sender]?.notified || Date.now() - spamTracker[sender].notified > 30000) {
               spamTracker[sender].notified = Date.now();
               await sock.sendMessage(from, {
-                text: `🚫 *ANTI-SPAM*\n\n@${senderNumber} di-mute *${spamCheck.sisa} detik*!`,
+                text: `🚫 *ANTI-SPAM*\n\n@${senderNumber} di-mute ${sc.sisa} detik!`,
                 mentions: [sender],
               });
             }
           } else {
             await sock.sendMessage(from, {
-              text: `⚠️ *PERINGATAN* (${spamCheck.warned}/${config.warningBeforeMute})\n\n@${senderNumber}, jangan spam!`,
+              text: `⚠️ *PERINGATAN* (${sc.warned}/${config.warningBeforeMute})\n\n@${senderNumber}, jangan spam!`,
               mentions: [sender],
             });
           }
           return;
         }
       }
-      // ==================== AUTO DETECT JAWABAN GAME ====================
-      if (!text.startsWith(config.prefix) && gameState[from]) {
-        const game = gameState[from];
-        const lowerText = text.trim().toLowerCase();
 
-        if (game.sender === sender) {
-          if (game.game === 'tebakangka') {
-            const angka = parseInt(lowerText);
-            if (!isNaN(angka)) {
-              if (angka === game.angka) {
-                clearGameTimeout(from);
-                const u = getUser(sender);
-                updateUser(sender, { point: u.point + 5, money: u.money + 500 });
-                delete gameState[from];
-                await sock.sendMessage(from, { text: `🎉 *BENAR!*\nAngka: ${game.angka}\n\n+5 Point\n+Rp 500` }, { quoted: msg });
-                return;
-              } else {
-                await sock.sendMessage(from, { text: `😢 *SALAH!* Coba lagi atau ketik *${config.prefix}nyerah*` }, { quoted: msg });
-                return;
-              }
-            }
-          }
+      // AMBIL TEXT
+      let text = '';
+      if (type === 'conversation') text = msg.message.conversation;
+      else if (type === 'extendedTextMessage') text = msg.message.extendedTextMessage.text;
+      else if (type === 'imageMessage') text = msg.message.imageMessage.caption || '';
+      else if (type === 'videoMessage') text = msg.message.videoMessage.caption || '';
 
-          else if (game.game === 'quiz') {
-            if (lowerText === game.jawab) {
-              clearGameTimeout(from);
-              const u = getUser(sender);
-              updateUser(sender, { point: u.point + 10, money: u.money + 1000 });
-              delete gameState[from];
-              await sock.sendMessage(from, { text: `🎉 *BENAR!*\n\n+10 Point\n+Rp 1.000` }, { quoted: msg });
-              return;
-            } else {
-              await sock.sendMessage(from, { text: `😢 *SALAH!* Coba lagi atau ketik *${config.prefix}nyerah*` }, { quoted: msg });
-              return;
-            }
-          }
+      // HANDLE BUTTON REPLY
+      const btnId = msg.message?.buttonsResponseMessage?.selectedButtonId
+        || msg.message?.listResponseMessage?.singleSelectReply?.selectedRowId
+        || msg.message?.templateButtonReplyMessage?.selectedId;
+      if (btnId) text = config.prefix + btnId;
 
-          else if (game.game === 'tebakkata') {
-            if (lowerText === game.jawab) {
-              clearGameTimeout(from);
-              const u = getUser(sender);
-              updateUser(sender, { money: u.money + 750, point: u.point + 3 });
-              delete gameState[from];
-              await sock.sendMessage(from, { text: `🎉 *BENAR!*\n\n+Rp 750\n+3 Point` }, { quoted: msg });
-              return;
-            } else {
-              await sock.sendMessage(from, { text: `😢 *SALAH!* Coba lagi atau ketik *${config.prefix}nyerah*` }, { quoted: msg });
-              return;
-            }
-          }
-          else if (game.game === 'tebakgambar' || game.game === 'tebakpemainbola' || game.game === 'tebakhewan' || game.game === 'tebakibukota') {
-            const accepted = Array.isArray(game.jawab) ? game.jawab : [game.jawab];
-            if (accepted.some(j => lowerText === j || lowerText.includes(j))) {
-              clearGameTimeout(from);
-              const u = getUser(sender);
-              updateUser(sender, { money: u.money + 800, point: u.point + 3 });
-              delete gameState[from];
-              await sock.sendMessage(from, { text: `🎉 *BENAR!*\n\n+Rp 800\n+3 Point` }, { quoted: msg });
-              return;
-            } else {
-              await sock.sendMessage(from, { text: `😢 *SALAH!* Coba lagi atau ketik *${config.prefix}nyerah*` }, { quoted: msg });
-              return;
-            }
-          }
+      if (!text) return;
 
-          else if (game.game === 'tebaklagu') {
-            if (game.jawab.some(j => lowerText.includes(j))) {
-              clearGameTimeout(from);
-              const u = getUser(sender);
-              updateUser(sender, { money: u.money + 900, point: u.point + 4 });
-              delete gameState[from];
-              await sock.sendMessage(from, { text: `🎉 *BENAR!*\n\n+Rp 900\n+4 Point` }, { quoted: msg });
-              return;
-            } else {
-              await sock.sendMessage(from, { text: `😢 *SALAH!* Coba lagi atau ketik *${config.prefix}nyerah*` }, { quoted: msg });
-              return;
-            }
-          }
-
-          else if (game.game === 'tebakfilm') {
-            if (game.jawab.some(j => lowerText.includes(j))) {
-              clearGameTimeout(from);
-              const u = getUser(sender);
-              updateUser(sender, { money: u.money + 1000, point: u.point + 5 });
-              delete gameState[from];
-              await sock.sendMessage(from, { text: `🎉 *BENAR!*\n\n+Rp 1.000\n+5 Point` }, { quoted: msg });
-              return;
-            } else {
-              await sock.sendMessage(from, { text: `😢 *SALAH!* Coba lagi atau ketik *${config.prefix}nyerah*` }, { quoted: msg });
-              return;
-            }
-          }
-          else if (game.game === 'math') {
-            const angka = parseInt(lowerText);
-            if (!isNaN(angka)) {
-              if (angka === game.jawab) {
-                clearGameTimeout(from);
-                const u = getUser(sender);
-                updateUser(sender, { money: u.money + 500, point: u.point + 2 });
-                delete gameState[from];
-                await sock.sendMessage(from, { text: `🎉 *BENAR!*\n\n+Rp 500\n+2 Point` }, { quoted: msg });
-                return;
-              } else {
-                await sock.sendMessage(from, { text: `😢 *SALAH!* Coba lagi atau ketik *${config.prefix}nyerah*` }, { quoted: msg });
-                return;
-              }
-            }
-          }
-
-          else if (game.game === 'tebakemoji') {
-            const cocok = game.jawab.some(j => lowerText.includes(j));
-            if (cocok) {
-              clearGameTimeout(from);
-              const u = getUser(sender);
-              updateUser(sender, { money: u.money + 800, point: u.point + 3 });
-              delete gameState[from];
-              await sock.sendMessage(from, { text: `🎉 *BENAR!*\n\n+Rp 800\n+3 Point` }, { quoted: msg });
-              return;
-            } else {
-              await sock.sendMessage(from, { text: `😢 *SALAH!* Coba lagi atau ketik *${config.prefix}nyerah*` }, { quoted: msg });
-              return;
-            }
-          }
-
-          else if (game.game === 'hangman') {
-            if (lowerText.length === 1 && /[a-z]/.test(lowerText)) {
-              const huruf = lowerText;
-              if (game.tebakan.includes(huruf)) {
-                await sock.sendMessage(from, { text: '❌ Sudah ditebak!' }, { quoted: msg });
-                return;
-              }
-              game.tebakan.push(huruf);
-              if (!game.kata.includes(huruf)) game.nyawa--;
-              const tampil = game.kata.split('').map(c => game.tebakan.includes(c) ? c : '_').join(' ');
-              const nyawaBar = '❤️'.repeat(game.nyawa) + '🖤'.repeat(6 - game.nyawa);
-              
-              if (game.nyawa <= 0) {
-                clearGameTimeout(from);
-                delete gameState[from];
-                await sock.sendMessage(from, { text: `💀 *GAME OVER!*\nKata: *${game.kata}*` }, { quoted: msg });
-                return;
-              }
-              if (!tampil.includes('_')) {
-                clearGameTimeout(from);
-                const u = getUser(sender);
-                updateUser(sender, { money: u.money + 1000, point: u.point + 5 });
-                delete gameState[from];
-                await sock.sendMessage(from, { text: `🎉 *MENANG!*\nKata: *${game.kata}*\n\n+Rp 1.000\n+5 Point` }, { quoted: msg });
-                return;
-              }
-              await sock.sendMessage(from, { text: `🎯 *HANGMAN*\n\nKata: ${tampil}\nNyawa: ${nyawaBar}\nHuruf: ${game.tebakan.join(', ')}` }, { quoted: msg });
-              return;
-            }
-          }
-        }
-      }
-      // ==================== END AUTO DETECT ====================
-
-      // Random question (tanpa prefix)
+      // RANDOM QUESTION (tanpa prefix)
       if (!text.startsWith(config.prefix)) {
         const lower = text.toLowerCase();
-        const randoms = [
-          { keys: ['kapankah aku menikah','kapan aku menikah','kapan nikah'], ans: ['💍 Ramalan: *2 tahun lagi* nih!','💍 Kamu akan menikah *tahun depan*!','💍 Sabar ya, *3-5 tahun* lagi!'] },
-          { keys: ['akankah aku','apakah aku akan','apakah aku bisa'], ans: ['🔮 *Ya, kemungkinan besar bisa!*','🔮 *Tergantung usahamu.* Rajin, pasti tercapai!','🔮 *Peluangnya 50:50.*'] },
-          { keys: ['apakah dia suka aku','dia suka aku gak'], ans: ['❤️ *Dia diam-diam memperhatikanmu.*','❤️ *Sinyal cinta belum jelas.* Tanya langsung!','❤️ *Peluang 70% dia suka kamu.* Tembak aja!'] },
-          { keys: ['ramalan','zodiak','nasib'], ans: ['🌟 *Bintangmu berkata:* hari ini penuh keberuntungan!','🌟 *Energi positif* sedang mengelilingimu.'] },
+        const rq = [
+          { keys: ['kapankah aku menikah', 'kapan aku menikah', 'kapan nikah'], ans: ['💍 *2 tahun lagi* nih!', '💍 Menikah *tahun depan*!', '💍 Sabar ya, *3-5 tahun*!'] },
+          { keys: ['akankah aku', 'apakah aku akan', 'apakah aku bisa'], ans: ['🔮 *Ya, kemungkinan bisa!*', '🔮 *Tergantung usahamu.*', '🔮 *InsyaAllah bisa.*'] },
+          { keys: ['apakah dia suka aku', 'dia suka aku gak'], ans: ['❤️ *Dia diam-diam suka kamu.*', '❤️ *Tanya langsung aja!*', '❤️ *Peluang 70%!*'] },
+          { keys: ['ramalan', 'zodiak', 'nasib'], ans: ['🌟 *Hari ini penuh keberuntungan!*', '🌟 *Energi positif mengelilingimu.*'] },
         ];
-        for (const q of randoms) {
-          if (q.keys.some((k) => lower.includes(k))) {
+        for (const q of rq) {
+          if (q.keys.some(k => lower.includes(k))) {
             await sock.sendMessage(from, { text: random(q.ans) }, { quoted: msg });
             return;
           }
@@ -560,62 +349,81 @@ async function startBot() {
         return;
       }
 
-      // Parse command
+      // PARSE
       const args = text.slice(config.prefix.length).trim().split(/ +/);
       const command = args.shift().toLowerCase();
 
-      // Level system
+      // AUTO-DETECT JAWABAN GAME
+      if (gameState[from] && gameState[from].sender === sender) {
+        const g = gameState[from];
+        const lower = text.trim().toLowerCase();
+        const accepted = Array.isArray(g.jawab) ? g.jawab : [g.jawab];
+        const isCorrect = accepted.some(j => String(j).toLowerCase() === lower || lower.includes(String(j).toLowerCase()));
+
+        if (isCorrect) {
+          clearGameTimeout(from);
+          const u = getUser(sender);
+          const rewards = { tebakangka: [5, 500], quiz: [10, 1000], tebakkata: [3, 750], math: [2, 500], tebakemoji: [3, 800] };
+          const [pt, mn] = rewards[g.game] || [3, 500];
+          updateUser(sender, { point: u.point + pt, money: u.money + mn });
+          delete gameState[from];
+          await sock.sendMessage(from, { text: `🎉 *BENAR!*\n\n+${pt} Point\n+${formatMoney(mn)}` }, { quoted: msg });
+          return;
+        }
+      }
+
+      // LEVEL SYSTEM
       if (config.levelSystem?.enabled && isGroup(from)) {
-        const levelResult = level.addExp(sender);
-        if (levelResult) {
-          const r = levelResult.reward || {};
-          let rewardText = '';
-          if (r.money) rewardText += `💰 +${formatMoney(r.money)}\n`;
-          if (r.point) rewardText += `⭐ +${r.point} Point\n`;
-          if (r.limit) rewardText += `🎫 +${r.limit} Limit\n`;
+        const res = level.addExp(sender);
+        if (res) {
+          const r = res.reward || {};
+          let txt = '';
+          if (r.money) txt += `💰 +${formatMoney(r.money)}\n`;
+          if (r.point) txt += `⭐ +${r.point} Point\n`;
+          if (r.limit) txt += `🎫 +${r.limit} Limit\n`;
           await sock.sendMessage(from, {
-            text: `🎉 *LEVEL UP!*\n\nSelamat @${senderNumber}!\n\n📊 Level: *${levelResult.oldLevel}* → *${levelResult.newLevel}*\n\n🎁 Hadiah:\n${rewardText}`,
+            text: `🎉 *LEVEL UP!*\n\nSelamat @${senderNumber}!\n\n📊 Level: *${res.oldLevel}* → *${res.newLevel}*\n\n🎁 Hadiah:\n${txt}`,
             mentions: [sender],
           });
         }
       }
 
-      // Cari plugin
-      const plugin = plugins.get(command);
-      if (!plugin) return; // Command tidak dikenal
+      // LIMIT CHECK
+      const noLimit = ['menu','help','menugame','menugames','menufun','menuhiburan','menuekonomi','menueco','menulevel','menugroup','menuadmin','menuowner','menuown','runtime','uptime','rt','profile','profil','owner','info','botinfo','mode','self','public','limit','point','uang','money','daily','shop','ping','wiki','cuaca','jodoh','sifat','tourl','sticker','stiker','s'];
 
-      // Limit check
       const user = getUser(sender);
-      const isOwnerUser = isSenderOwner(msg, sender);
-      const noLimitCategories = ['menu', 'info', 'owner', 'level', 'group'];
-      const noLimitCommands = ['menu','help','menugame','menugames','menufun','menuhiburan','menuekonomi','menueco','menulevel','menugroup','menuadmin','menuowner','menuown','profile','profil','owner','info','botinfo','mode','self','public','limit','point','uang','money','daily','shop','addlimit','addmoney','addpoint','setlimit','setmoney','resetuser','broadcast','antilink','welcome','setwelcome','setgoodbye','kick','promote','demote','tagall','groupinfo','antispam','unmute','tqto','thanks','credit','group','grup','grupresmi','id','groupid','cekid','backup','backupdb','restore','restoredb','restoreyes','restoreno','pantun','puisi','quote','motivasi','katabijak','kata','bijak','level','lvl','rank','peringkat','leaderboard','lb','top','resetlevel','resetalllevel','getcfg','getconfig','setcfg','setconfig','reloadcfg','reloadconfig','reload','showconfig','showcfg','readfile','listfiles','ls','toggle','nyerah','menyerah','giveup','savefile','reloadplugins','reloadplugin','reloadp','restartbot','restart','rebootbot','sticker','stiker','s','toimg','toimage','emojimix','emix'];
+      const ownerUser = isSenderOwner(msg, sender);
 
-      if (!noLimitCommands.includes(command) && !isOwnerUser && !noLimitCategories.includes(plugin.category)) {
-        if (user.limit <= 0) {
-          return sock.sendMessage(from, {
-            text: `⚠️ *Limit habis!*\n\nTunggu reset besok atau hubungi owner.\n\n👑 ${config.ownerName}\n📞 ${config.ownerNumber}`,
-          }, { quoted: msg });
-        }
+      if (!noLimit.includes(command) && !ownerUser && user.limit <= 0) {
+        return sock.sendMessage(from, {
+          text: `⚠️ *Limit habis!*\n\nTunggu reset besok atau hubungi owner.\n\n👑 ${config.ownerName}\n📞 ${config.ownerNumber}`,
+        }, { quoted: msg });
+      }
+      if (!noLimit.includes(command) && !ownerUser) {
         updateUser(sender, { limit: user.limit - 1 });
       }
 
-      // Execute plugin
+      // CARI PLUGIN
+      const plugin = plugins.get(command);
+      if (!plugin) return;
+
+      // EXECUTE
       const ctx = buildContext(sock, msg, args);
       try {
         await plugin.execute(sock, msg, args, ctx);
       } catch (err) {
         console.error(`❌ Error plugin "${plugin.name}":`, err.message);
-        await sock.sendMessage(from, { text: `❌ Terjadi error di command *${command}*` }, { quoted: msg });
       }
 
     } catch (err) {
-      console.error('❌ Error handler:', err.message);
+      console.error('❌ Handler error:', err.message);
     }
   });
 }
 
-// ==================== START ====================
-startBot().catch((err) => {
-  console.error('❌ Fatal Error:', err);
+// ============ LOAD & START ============
+loadPlugins();
+startBot().catch(err => {
+  console.error('❌ Fatal:', err);
   process.exit(1);
 });
