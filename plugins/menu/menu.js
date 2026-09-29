@@ -1,26 +1,26 @@
 module.exports = {
   name: 'menu',
   category: 'menu',
-  aliases: ['help'],
+  aliases: ['help', 'start'],
   async execute(sock, msg, args, ctx) {
-    const { config, from, user, formatMoney, sendVoiceNote, sendImageCaption } = ctx;
+    const { config, from } = ctx;
+    const user = ctx.user || { limit: 0, money: 0, point: 0 };
+    const pushName = ctx.pushName || 'User';
+    const formatMoney = ctx.formatMoney || (a => 'Rp ' + a);
 
-    let tqtoText = '';
-    if (config.tqto?.contributors?.length > 0) {
-      tqtoText += `\n🌟 *${config.tqto.title}*\n`;
-      config.tqto.contributors.forEach((c, i) => {
-        tqtoText += `${i + 1}. ${c.name}\n`;
-      });
-    }
+    let ownerTag = '';
+    try { if (ctx.isSenderOwner && ctx.isSenderOwner()) ownerTag = ' 👑'; } catch {}
 
-    const menu = `
-╭━━━「 🤖 *${config.botName}* 」━━━
-┃ 📌 Mode    : ${config.botMode === 'self' ? '🏠 SELF' : '🌐 PUBLIC'}
-┃ 👑 Owner   : ${config.ownerName}
-┃ 📞 Nomor   : ${config.ownerNumber}
-┃ 🌐 Website : ${config.website}
-┃ 💬 Grup    : ${config.officialGroup.link}
-╰━━━━━━━━━━━━━━━━━━━━
+    const menuText = `╔══════════════════════════════════╗
+║      ⚡ *${config.botName}* ⚡
+╚══════════════════════════════════╝
+
+Halo, *${pushName}*!${ownerTag}
+
+📊 *Status Kamu*
+🎫 Limit : *${user.limit}*
+💰 Uang  : *${formatMoney(user.money)}*
+⭐ Point : *${user.point}*
 
 📂 *DAFTAR MENU*
 
@@ -30,22 +30,12 @@ module.exports = {
 📊 ${config.prefix}menulevel
 🛡️ ${config.prefix}menugroup
 👑 ${config.prefix}menuowner
+⏱️ ${config.prefix}runtime
+🛠️ ${config.prefix}menutools
 
-╭─「 📊 *INFO KAMU* 」
-│ 🎫 Limit : ${user.limit}
-│ 💰 Uang  : ${formatMoney(user.money)}
-│ ⭐ Point : ${user.point}
-╰━━━━━━━━━━━━━━━━━━━━
-${tqtoText}
-    `.trim();
+📞 *Owner:* ${config.ownerName}
+🌐 ${config.website}`;
 
-    const mode = config.sendMenuAs || 'both';
-    if (mode === 'voice' || mode === 'both') {
-      await sendVoiceNote(sock, from, config.voiceMenu, config.voiceMenuUrl, msg);
-    }
-    if (mode === 'text' || mode === 'both') {
-      const ok = await sendImageCaption(sock, from, config.menuImage, config.menuImageUrl, menu, msg);
-      if (!ok) await sock.sendMessage(from, { text: menu }, { quoted: msg });
-    }
-  }
+    await sock.sendMessage(from, { text: menuText });
+  },
 };
