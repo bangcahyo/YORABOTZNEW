@@ -2,17 +2,29 @@ module.exports = {
   name: 'addmoney',
   category: 'owner',
   async execute(sock, msg, args, ctx) {
-    const { from, mentioned, getUser, updateUser, formatMoney, isSenderOwner } = ctx;
-    if (!isSenderOwner()) return;
-    if (!mentioned || mentioned.length === 0) return;
-    const t = mentioned[0];
-    const amt = parseInt(args[1]);
-    if (!amt || amt <= 0) return sock.sendMessage(from, { text: '❌ Jumlah tidak valid!' });
-    const tu = getUser(t);
-    updateUser(t, { money: tu.money + amt });
+    const { from, mentioned, isSenderOwner, getUser, updateUser, formatMoney } = ctx;
+
+    let isOwner = false;
+    try { isOwner = isSenderOwner && isSenderOwner(); } catch {}
+    if (!isOwner) return;
+
+    if (!mentioned || mentioned.length === 0) {
+      return sock.sendMessage(from, { text: '❌ Tag user!\nContoh: `.addmoney @user 10000`' });
+    }
+
+    const target = mentioned[0];
+    const amount = parseInt(args[1]);
+
+    if (!amount || amount <= 0) {
+      return sock.sendMessage(from, { text: '❌ Jumlah tidak valid!' });
+    }
+
+    const tu = getUser(target);
+    updateUser(target, { money: tu.money + amount });
+
     await sock.sendMessage(from, {
-      text: `✅ +${formatMoney(amt)} untuk @${t.split('@')[0]}\nTotal: ${formatMoney(tu.money + amt)}`,
-      mentions: [t]
-    }, { quoted: msg });
-  }
+      text: `✅ +${formatMoney(amount)} untuk @${target.split('@')[0]}\nTotal: ${formatMoney(tu.money + amount)}`,
+      mentions: [target],
+    });
+  },
 };
