@@ -1,7 +1,41 @@
 module.exports = {
-  name: 'menugame', category: 'menu', aliases: ['menugames'],
+  name: 'menugame',
+  category: 'menu',
+  aliases: ['menugames'],
   async execute(sock, msg, args, ctx) {
-    const { config, from } = ctx;
-    await sock.sendMessage(from, { text: `╭━━━「 🎮 *MENU GAME* 」━━━\n\n╭─「 🎰 *TARUHAN UANG* 」\n│ 🎰 ${config.prefix}slot <taruhan>\n│ 🎲 ${config.prefix}dadu <taruhan>\n│ 🪙 ${config.prefix}koin <taruhan>\n│ 🃏 ${config.prefix}bj <taruhan>\n│ 🎡 ${config.prefix}roulette <warna> <taruhan>\n│ 🎲 ${config.prefix}sicbo <taruhan> <besar/kecil>\n│ ✊ ${config.prefix}suit <pilihan> <taruhan>\n│ ⚔️ ${config.prefix}war <taruhan>\n│ 🎡 ${config.prefix}wheel <taruhan>\n╰━━━━━━━━━━━━━━━━━━━━\n\n╭─「 🎯 *TEBAK-TEBAKAN* 」\n│ 🔢 ${config.prefix}tebakangka\n│ ❓ ${config.prefix}quiz\n│ 📝 ${config.prefix}tebakkata\n│ 🎨 ${config.prefix}tebakemoji\n│ 🧮 ${config.prefix}math\n│ 🎯 ${config.prefix}hangman\n╰━━━━━━━━━━━━━━━━━━━━\n\n╭─「 🎮 *BOARD GAME* 」\n│ ⭕ ${config.prefix}ttt\n╰━━━━━━━━━━━━━━━━━━━━\n\n💡 Game tebak-tebakan ada waktu 60 detik!\n🏳️ Ketik ${config.prefix}nyerah untuk skip` }, { quoted: msg });
-  }
+    const { config, from, formatMoney } = ctx;
+
+    const menuText = `╔══════════════════════════════════╗
+║      🎮 *MENU GAME*
+╚══════════════════════════════════╝
+
+🎰 *TARUHAN UANG*
+${config.prefix}slot <taruhan>
+${config.prefix}dadu <taruhan>
+${config.prefix}koin <taruhan>
+${config.prefix}bj <taruhan>
+${config.prefix}roulette <warna> <taruhan>
+${config.prefix}sicbo <taruhan> <besar/kecil>
+${config.prefix}suit <pilihan> <taruhan>
+${config.prefix}war <taruhan>
+${config.prefix}wheel <taruhan>
+
+🎯 *TEBAK-TEBAKAN*
+${config.prefix}tebakangka
+${config.prefix}quiz
+${config.prefix}tebakkata
+${config.prefix}tebakemoji
+${config.prefix}math
+${config.prefix}hangman
+
+🎮 *BOARD GAME*
+${config.prefix}ttt
+
+💡 Ketik jawabanmu langsung di chat!
+🏳️ Ketik ${config.prefix}nyerah untuk skip
+
+💵 Min: ${formatMoney(config.minBet)} | Max: ${formatMoney(config.maxBet)}`;
+
+    await sock.sendMessage(from, { text: menuText });
+  },
 };

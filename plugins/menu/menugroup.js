@@ -1,8 +1,38 @@
 module.exports = {
-  name: 'menugroup', category: 'menu', aliases: ['menuadmin'],
+  name: 'menugroup',
+  category: 'menu',
+  aliases: ['menuadmin'],
   async execute(sock, msg, args, ctx) {
     const { config, from, isGroup } = ctx;
-    if (!isGroup(from)) return sock.sendMessage(from, { text: '❌ Hanya untuk grup!' }, { quoted: msg });
-    await sock.sendMessage(from, { text: `╭━━━「 🛡️ *MENU GROUP ADMIN* 」━━━\n\n╭─「 🛡️ *KEAMANAN* 」\n│ 🔗 ${config.prefix}antilink on/off\n│ 🛡️ ${config.prefix}antispam on/off\n│ 🔊 ${config.prefix}unmute @user\n╰━━━━━━━━━━━━━━━━━━━━\n\n╭─「 👋 *WELCOME & GOODBYE* 」\n│ 👋 ${config.prefix}welcome on/off\n│ ✏️ ${config.prefix}setwelcome <teks>\n│ ✏️ ${config.prefix}setgoodbye <teks>\n╰━━━━━━━━━━━━━━━━━━━━\n\n╭─「 👥 *MANAJEMEN MEMBER* 」\n│ 👢 ${config.prefix}kick @user\n│ ⬆️ ${config.prefix}promote @user\n│ ⬇️ ${config.prefix}demote @user\n│ 📢 ${config.prefix}tagall <pesan>\n╰━━━━━━━━━━━━━━━━━━━━\n\n╭─「 ℹ️ *INFO GRUP* 」\n│ ℹ️ ${config.prefix}groupinfo\n│ 🆔 ${config.prefix}id\n╰━━━━━━━━━━━━━━━━━━━━` }, { quoted: msg });
-  }
+
+    if (!isGroup(from)) {
+      return sock.sendMessage(from, { text: '❌ Hanya untuk grup!' });
+    }
+
+    const menuText = `╔══════════════════════════════════╗
+║      🛡️ *MENU GROUP ADMIN*
+╚══════════════════════════════════╝
+
+🛡️ *KEAMANAN*
+${config.prefix}antilink on/off
+${config.prefix}antispam on/off
+${config.prefix}unmute @user
+
+👋 *WELCOME & GOODBYE*
+${config.prefix}welcome on/off
+${config.prefix}setwelcome <teks>
+${config.prefix}setgoodbye <teks>
+
+👥 *MANAJEMEN MEMBER*
+${config.prefix}kick @user
+${config.prefix}promote @user
+${config.prefix}demote @user
+${config.prefix}tagall <pesan>
+
+ℹ️ *INFO GRUP*
+${config.prefix}groupinfo
+${config.prefix}id`;
+
+    await sock.sendMessage(from, { text: menuText });
+  },
 };

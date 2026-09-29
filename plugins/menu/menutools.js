@@ -1,27 +1,28 @@
 module.exports = {
-  name: 'menuekonomi',
+  name: 'menutools',
   category: 'menu',
-  aliases: ['menueco'],
+  aliases: ['menutool'],
   async execute(sock, msg, args, ctx) {
     const { config, from } = ctx;
 
     const menuText = `╔══════════════════════════════════╗
-║      💰 *MENU EKONOMI*
+║      🛠️ *MENU TOOLS*
 ╚══════════════════════════════════╝
 
-👤 *PROFIL*
-${config.prefix}profile
-${config.prefix}limit
-${config.prefix}point
-${config.prefix}uang
+🎨 *STICKER*
+${config.prefix}sticker (reply gambar)
+${config.prefix}toimg (reply sticker)
 
-🎁 *REWARD*
-${config.prefix}daily
-${config.prefix}transfer @user <jumlah>
+📤 *UPLOAD*
+${config.prefix}tourl (reply media)
 
-🛒 *SHOP*
-${config.prefix}shop
-${config.prefix}buy <item>`;
+📖 *INFO*
+${config.prefix}wiki <topik>
+${config.prefix}cuaca <kota>
+
+🔮 *RAMALAN*
+${config.prefix}jodoh @user
+${config.prefix}sifat <nama>`;
 
     await sock.sendMessage(from, { text: menuText });
   },
