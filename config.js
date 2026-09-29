@@ -45,9 +45,9 @@ module.exports = {
   // Upload gambar & voice ke Catbox.moe atau host lain
   // Lalu paste URL-nya di sini
 
-  menuImageUrl: '',                      // URL gambar menu
-  voiceMenuUrl: '',                      // URL voice menu (.ogg OPUS)
-  voiceOwnerUrl: '',                     // URL voice owner (.ogg OPUS)
+  menuImageUrl: 'https://files.catbox.moe/dn8hny.jpg',                      // URL gambar menu
+  voiceMenuUrl: 'https://files.catbox.moe/ogk89j.ogg',                      // URL voice menu (.ogg OPUS)
+  voiceOwnerUrl: 'https://files.catbox.moe/jfzn27.ogg',                     // URL voice owner (.ogg OPUS)
 
   // Pengaturan kirim media
   sendMenuAs: 'both',                    // 'text' | 'voice' | 'image' | 'both'
