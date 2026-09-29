@@ -1,0 +1,29 @@
+# Dependencies
+node_modules/
+
+# Session WhatsApp (RAHASIA!)
+session/
+
+# Database (auto-generate)
+database/
+
+# Assets media (pakai URL, bukan file)
+assets/*
+!assets/.gitkeep
+
+# Logs
+*.log
+npm-debug.log*
+
+# Environment
+.env
+.env.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
