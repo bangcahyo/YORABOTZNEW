@@ -9,29 +9,45 @@ module.exports = {
       return sock.sendMessage(from, { text: '❌ Hanya untuk grup!' });
     }
 
-    const menuText = `╔══════════════════════════════════╗
-║      🛡️ *MENU GROUP ADMIN*
-╚══════════════════════════════════╝
+    const menuText = `╔══════════════════════════════════════╗
+║      🛡️  *GROUP ADMIN MENU*  🛡️
+╚══════════════════════════════════════╝
 
-🛡️ *KEAMANAN*
-${config.prefix}antilink on/off
-${config.prefix}antispam on/off
-${config.prefix}unmute @user
+╭─────────────────────────────────────╮
+│  🛡️  *KEAMANAN*                      │
+╰─────────────────────────────────────╯
 
-👋 *WELCOME & GOODBYE*
-${config.prefix}welcome on/off
-${config.prefix}setwelcome <teks>
-${config.prefix}setgoodbye <teks>
+  ◈  🔗  ${config.prefix}antilink on/off
+  ◈  🛡️  ${config.prefix}antispam on/off
+  ◈  🔊  ${config.prefix}unmute @user
 
-👥 *MANAJEMEN MEMBER*
-${config.prefix}kick @user
-${config.prefix}promote @user
-${config.prefix}demote @user
-${config.prefix}tagall <pesan>
+╭─────────────────────────────────────╮
+│  👋  *WELCOME & GOODBYE*             │
+╰─────────────────────────────────────╯
 
-ℹ️ *INFO GRUP*
-${config.prefix}groupinfo
-${config.prefix}id`;
+  ◈  👋  ${config.prefix}welcome on/off
+  ◈  ✏️  ${config.prefix}setwelcome <teks>
+  ◈  ✏️  ${config.prefix}setgoodbye <teks>
+
+╭─────────────────────────────────────╮
+│  👥  *MANAJEMEN MEMBER*              │
+╰─────────────────────────────────────╯
+
+  ◈  👢  ${config.prefix}kick @user
+  ◈  ⬆️  ${config.prefix}promote @user
+  ◈  ⬇️  ${config.prefix}demote @user
+  ◈  📢  ${config.prefix}tagall <pesan>
+
+╭─────────────────────────────────────╮
+│  ℹ️  *INFO GRUP*                     │
+╰─────────────────────────────────────╯
+
+  ◈  ℹ️  ${config.prefix}groupinfo
+  ◈  🆔  ${config.prefix}id
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  ⚡  _${config.botName} — Group Menu_
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`;
 
     await sock.sendMessage(from, { text: menuText });
   },

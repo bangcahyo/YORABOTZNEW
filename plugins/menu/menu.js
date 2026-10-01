@@ -1,41 +1,146 @@
+const fs = require('fs');
+const path = require('path');
+
+const GREETINGS = ['✨ Hai', '🔥 Welcome', '⚡ Yo', '🌙 Malam', '🌞 Pagi', '💫 Halo', '🎯 Hai hai', '🎨 Salam', '🌟 Yo bro', '👋 Halo'];
+
+function getTimeGreeting() {
+  const h = new Date().getHours();
+  if (h < 11) return '🌞 Selamat pagi';
+  if (h < 15) return '☀️ Selamat siang';
+  if (h < 18) return '🌤️ Selamat sore';
+  if (h < 21) return '🌆 Selamat petang';
+  return '🌙 Selamat malam';
+}
+
+function formatTanggal() {
+  const hari = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+  const bulan = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+  const d = new Date();
+  return `${hari[d.getDay()]}, ${d.getDate()} ${bulan[d.getMonth()]} ${d.getFullYear()}`;
+}
+
+function getTotalUsers() {
+  try {
+    const p = path.join(__dirname, '..', '..', 'database', 'users.json');
+    if (!fs.existsSync(p)) return 0;
+    return Object.keys(JSON.parse(fs.readFileSync(p, 'utf-8'))).length;
+  } catch { return 0; }
+}
+
 module.exports = {
   name: 'menu',
   category: 'menu',
   aliases: ['help', 'start'],
   async execute(sock, msg, args, ctx) {
     const { config, from } = ctx;
-    const user = ctx.user || { limit: 0, money: 0, point: 0 };
+    const user = ctx.user || { limit: 0, money: 0, point: 0, exp: 0, registered: false };
     const pushName = ctx.pushName || 'User';
     const formatMoney = ctx.formatMoney || (a => 'Rp ' + a);
 
+    const greeting = Math.random() < 0.5 ? GREETINGS[Math.floor(Math.random() * GREETINGS.length)] : getTimeGreeting();
     let ownerTag = '';
     try { if (ctx.isSenderOwner && ctx.isSenderOwner()) ownerTag = ' 👑'; } catch {}
 
-    const menuText = `╔══════════════════════════════════╗
-║      ⚡ *${config.botName}* ⚡
-╚══════════════════════════════════╝
+    const totalUsers = getTotalUsers();
+    const uptime = process.uptime();
+    const upJam = Math.floor(uptime / 3600);
+    const upMenit = Math.floor((uptime % 3600) / 60);
+    const getLevel = (exp) => Math.floor(Math.sqrt(exp / 100)) + 1;
+    const level = getLevel(user.exp || 0);
+    let isPrem = false;
+    try { isPrem = ctx.isPremium && ctx.isPremium(); } catch {}
+    const roleText = ownerTag ? 'Owner' : (isPrem ? 'Premium 🅟' : (user.registered ? 'Member' : 'Belum Daftar'));
 
-Halo, *${pushName}*!${ownerTag}
+    let tqtoText = '';
+    if (config.tqto?.contributors?.length) {
+      tqtoText = `\n╭─────────────────────────────────────╮\n│  🙏  *${config.tqto.title}*                     │\n╰─────────────────────────────────────╯\n\n`;
+      config.tqto.contributors.forEach((c, i) => {
+        const nama = typeof c === 'string' ? c : (c.name || 'Unknown');
+        tqtoText += `  ${i + 1}. ${nama}\n`;
+      });
+    }
 
-📊 *Status Kamu*
-🎫 Limit : *${user.limit}*
-💰 Uang  : *${formatMoney(user.money)}*
-⭐ Point : *${user.point}*
+    const menuText = `╔══════════════════════════════════════╗
+║                                      ║
+║      ⚡  *${config.botName.toUpperCase()}*  ⚡
+║      ━━━━━━━━━━━━━━━━━━━
+║                                      ║
+╚══════════════════════════════════════╝
 
-📂 *DAFTAR MENU*
+  ${greeting}, *${pushName}*!${ownerTag}
 
-🎮 ${config.prefix}menugame
-🎭 ${config.prefix}menufun
-💰 ${config.prefix}menuekonomi
-📊 ${config.prefix}menulevel
-🛡️ ${config.prefix}menugroup
-👑 ${config.prefix}menuowner
-⏱️ ${config.prefix}runtime
-🛠️ ${config.prefix}menutools
+╭─────────────────────────────────────╮
+│  📊  *STATISTICS*                    │
+╰─────────────────────────────────────╯
 
-📞 *Owner:* ${config.ownerName}
-🌐 ${config.website}`;
+  ◆  👤  Role   : *${roleText}*
+  ◆  ⭐  Level  : *${level}*
+  ◆  📈  EXP    : *${user.exp || 0}*
+  ◆  🎫  Limit  : *${user.limit}*
+  ◆  💰  Uang   : *${formatMoney(user.money)}*
+  ◆  🌟  Point  : *${user.point}*
 
-    await sock.sendMessage(from, { text: menuText });
+╭─────────────────────────────────────╮
+│  📂  *MENU UTAMA*                    │
+╰─────────────────────────────────────╯
+
+  ◈  🎮  *GAME & HIBURAN*    → ${config.prefix}menugame
+  ◈  🎭  *FUN & RANDOM*      → ${config.prefix}menufun
+  ◈  💰  *EKONOMI & SHOP*    → ${config.prefix}menuekonomi
+  ◈  📊  *LEVEL SYSTEM*      → ${config.prefix}menulevel
+  ◈  🛡️  *GROUP ADMIN*       → ${config.prefix}menugroup
+  ◈  🛠️  *TOOLS & UTILITY*   → ${config.prefix}menutools
+  ◈  👑  *OWNER TOOLS*       → ${config.prefix}menuowner
+
+╭─────────────────────────────────────╮
+│  ⚡  *FITUR CEPAT*                   │
+╰─────────────────────────────────────╯
+
+  ◈  📝  ${config.prefix}daftar    → Registrasi
+  ◈  👤  ${config.prefix}profile   → Profil
+  ◈  🎁  ${config.prefix}daily     → Daily
+  ◈  🏆  ${config.prefix}leaderboard
+  ◈  ⏱️  ${config.prefix}runtime
+  ◈  🏓  ${config.prefix}ping
+
+╭─────────────────────────────────────╮
+│  ℹ️  *INFO BOT*                      │
+╰─────────────────────────────────────╯
+
+  ◆  📅  ${formatTanggal()}
+  ◆  👥  Total User : *${totalUsers}*
+  ◆  ⏱️  Uptime     : *${upJam}j ${upMenit}m*
+  ◆  👑  Owner      : ${config.ownerName}
+  ◆  📞  Nomor      : ${config.ownerNumber}
+  ◆  🌐  ${config.website}
+
+╭─────────────────────────────────────╮
+│  💬  *GRUP RESMI*                    │
+╰─────────────────────────────────────╯
+
+  ${config.officialGroup?.link || '-'}
+${tqtoText}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  ⚡  _${config.botName} v7.1 — _wa.me/fityora_
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`;
+
+    const mode = config.sendMenuAs || 'both';
+
+    if ((mode === 'voice' || mode === 'both') && config.voiceMenuUrl) {
+      try {
+        await sock.sendMessage(from, { audio: { url: config.voiceMenuUrl }, mimetype: 'audio/ogg; codecs=opus', ptt: true });
+      } catch (e) { console.log('Voice gagal:', e.message); }
+    }
+
+    if ((mode === 'image' || mode === 'both') && config.menuImageUrl) {
+      try {
+        await sock.sendMessage(from, { image: { url: config.menuImageUrl }, caption: menuText });
+      } catch {
+        await sock.sendMessage(from, { text: menuText });
+      }
+    } else {
+      await sock.sendMessage(from, { text: menuText });
+    }
   },
 };
