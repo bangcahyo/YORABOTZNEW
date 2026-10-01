@@ -7,12 +7,44 @@ const QUOTES = [
   { text: 'Kesuksesan adalah hasil dari persiapan dan kerja keras.', author: 'Colin Powell' },
   { text: 'Ilmu tanpa amal seperti pohon tanpa buah.', author: 'Anonymous' },
   { text: 'Waktu adalah uang. Jangan sia-siakan walau sedetik.', author: 'Anonymous' },
+  { text: 'Orang yang berhenti belajar akan tertinggal oleh zaman.', author: 'Anonymous' },
+  { text: 'Jangan takut melangkah, karena jalan panjang dimulai dari satu langkah.', author: 'Anonymous' },
+  { text: 'Kebahagiaan tidak datang dari harta, tapi dari hati yang bersyukur.', author: 'Anonymous' },
+  { text: 'Doa tanpa usaha itu sia-sia. Usaha tanpa doa itu sombong.', author: 'Anonymous' },
+  { text: 'Rezeki tidak akan tertukar, tapi usaha tetap harus maksimal.', author: 'Anonymous' },
+  { text: 'Setiap masalah punya solusi. Yang penting kita mau mencari.', author: 'Anonymous' },
+  { text: 'Berpikir positif, maka alam akan merespon dengan hal-hal positif juga.', author: 'Anonymous' },
+  { text: 'Hidup itu sederhana, kita yang membuatnya rumit.', author: 'Confucius' },
+  { text: 'Sahabat sejati akan ada di saat susah, bukan hanya saat senang.', author: 'Anonymous' },
+  { text: 'Jangan bandingkan hidupmu dengan orang lain, karena kamu tidak tahu prosesnya.', author: 'Anonymous' },
+  { text: 'Pendidikan adalah senjata paling ampuh untuk mengubah dunia.', author: 'Nelson Mandela' },
+  { text: 'Cara terbaik memprediksi masa depan adalah dengan menciptakannya.', author: 'Abraham Lincoln' },
+  { text: 'Hidup adalah apa yang terjadi saat kamu sibuk membuat rencana lain.', author: 'John Lennon' },
+  { text: 'Kegagalan adalah bumbu yang memberi rasa pada kesuksesan.', author: 'Truman Capote' },
+  { text: 'Jangan menunggu kesempatan, ciptakanlah kesempatan itu.', author: 'Anonymous' },
+  { text: 'Kesalahan terbesar adalah tidak pernah mencoba.', author: 'Anonymous' },
+  { text: 'Orang yang ingin sukses harus belajar dari kegagalan orang lain.', author: 'Anonymous' },
+  { text: 'Mimpi yang tidak pernah diwujudkan hanyalah angan-angan.', author: 'Anonymous' },
+  { text: 'Bekerja keras dalam diam, biarkan kesuksesanmu yang berbicara.', author: 'Anonymous' },
+  { text: 'Jadilah perubahan yang ingin kamu lihat di dunia.', author: 'Mahatma Gandhi' },
+  { text: 'Tidak ada kata terlambat untuk menjadi orang yang lebih baik.', author: 'Anonymous' },
+  { text: 'Semakin keras kamu bekerja, semakin besar keberuntunganmu.', author: 'Anonymous' },
+  { text: 'Hidup bukan tentang menemukan dirimu, tapi menciptakan dirimu.', author: 'George Bernard Shaw' },
+  { text: 'Ketika kamu lelah, ingatlah alasan kamu memulai.', author: 'Anonymous' },
+  { text: 'Pemenang sejati bukan yang tidak pernah gagal, tapi yang tak pernah menyerah.', author: 'Anonymous' },
+  { text: 'Kebaikan kecil adalah investasi besar untuk masa depan.', author: 'Anonymous' },
+  { text: 'Jangan pernah meremehkan dirimu sendiri, kamu lebih kuat dari yang kamu kira.', author: 'Anonymous' },
+  { text: 'Ilmu itu cahaya, dan amal adalah jalannya.', author: 'Anonymous' },
+  { text: 'Berhenti mengeluh, mulai berubah.', author: 'Anonymous' },
+  { text: 'Kesuksesan bukan kebetulan, tapi hasil dari kebiasaan baik.', author: 'Anonymous' },
+  { text: 'Masa depan milik mereka yang percaya pada keindahan mimpi-mimpinya.', author: 'Eleanor Roosevelt' },
+  { text: 'Setiap hari adalah kesempatan baru untuk menjadi lebih baik.', author: 'Anonymous' },
 ];
 module.exports = {
   name: 'quote', category: 'fun',
   async execute(sock, msg, args, ctx) {
     const { from, random } = ctx;
     const q = random(QUOTES);
-    await sock.sendMessage(from, { text: `💬 *QUOTE*\n\n_"${q.text}"_\n\n— ${q.author}` }, { quoted: msg });
+    await sock.sendMessage(from, { text: `💬 *QUOTE* (${QUOTES.length})\n\n_"${q.text}"_\n\n— ${q.author}` }, { quoted: msg });
   }
 };

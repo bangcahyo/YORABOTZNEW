@@ -1,0 +1,47 @@
+const FAKTA = [
+  'Madu tidak akan pernah basi. Madu berusia 3000 tahun ditemukan di makam Mesir dan masih bisa dimakan.',
+  'Gurita memiliki tiga jantung dan darahnya berwarna biru.',
+  'Sidik jari koala hampir identik dengan sidik jari manusia.',
+  'Bumi adalah satu-satunya planet yang tidak dinamai berdasarkan dewa.',
+  'Seekor siput bisa tidur selama 3 tahun.',
+  'Kupu-kupu mencicipi makanan dengan kakinya.',
+  'Hiu ada sebelum pohon. Hiu sudah ada 400 juta tahun lalu, pohon baru 350 juta tahun.',
+  'Seorang manusia menghabiskan rata-rata 6 bulan hidupnya untuk menunggu lampu merah.',
+  'Lidah manusia memiliki sekitar 10.000 reseptor rasa.',
+  'Bambu bisa tumbuh hingga 90 cm dalam sehari.',
+  'Semut tidak pernah tidur dan tidak memiliki paru-paru.',
+  'Kucing tidak bisa merasakan rasa manis.',
+  'Jantung manusia berdetak sekitar 100.000 kali sehari.',
+  'Tulang manusia lebih kuat dari beton dengan berat yang sama.',
+  'Bunga matahari muda selalu menghadap ke arah matahari.',
+  'Satu sendok madu membutuhkan kerja 12 lebah seumur hidupnya.',
+  'Otak manusia menghasilkan listrik sebesar 20 watt saat terjaga.',
+  'Lebah bisa mengenali wajah manusia.',
+  'Air di Bumi berusia lebih tua dari matahari.',
+  'Kulit manusia diperbarui setiap 27 hari.',
+  'Sapi memiliki sahabat dan bisa stres jika dipisahkan.',
+  'Burung merpati bisa mengenali dirinya di cermin.',
+  'Satu hari di Venus lebih lama dari satu tahun di Venus.',
+  'Bulan menjauh dari Bumi sekitar 3,8 cm setiap tahun.',
+  'Penguin bisa melompat setinggi 1,8 meter ke udara.',
+  'Telinga manusia terus tumbuh sepanjang hidup.',
+  'Kuda tidak bisa muntah, itu sebabnya masalah perut pada kuda berbahaya.',
+  'Nama "Google" berasal dari kesalahan ejaan kata "googol".',
+  'Menara Eiffel bisa memuai hingga 15 cm saat musim panas.',
+  'Seekor beruang kutub memiliki kulit hitam di bawah bulu transparannya.',
+  'Alpukat adalah buah, bukan sayur.',
+  'Pisang secara teknis adalah buah beri, sedangkan stroberi bukan.',
+  'Seekor lebah mengunjungi 50-100 bunga dalam sekali perjalanan.',
+  'Bumi bukanlah bola sempurna, melainkan sedikit gepeng di kutub.',
+  'Suara tidak bisa merambat di ruang hampa udara.',
+];
+
+module.exports = {
+  name: 'faktaunik',
+  category: 'fun',
+  aliases: ['fakta', 'funfact', 'fact'],
+  async execute(sock, msg, args, ctx) {
+    const { from, random } = ctx;
+    await sock.sendMessage(from, { text: `🧪 *FAKTA UNIK* (${FAKTA.length})\n\n${random(FAKTA)}` }, { quoted: msg });
+  },
+};
