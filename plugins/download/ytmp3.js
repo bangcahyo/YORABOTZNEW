@@ -1,31 +1,37 @@
+const { downloadYT, toMedia } = require('../../lib/downloader');
+
 module.exports = {
-  name: 'ytmp3', category: 'download', aliases: ['yta'],
+  name: 'ytmp3',
+  category: 'download',
+  aliases: ['yta'],
   async execute(sock, msg, args, ctx) {
     const { from } = ctx;
     const url = args[0];
-    if (!url || !url.includes('youtu')) return sock.sendMessage(from, { text: '❌ Kirim link YouTube!' }, { quoted: msg });
+
+    if (!url || !url.includes('youtu')) {
+      return sock.sendMessage(from, {
+        text: '❌ Kirim link YouTube!\nContoh: `.ytmp3 https://youtu.be/xxx`',
+      }, { quoted: msg });
+    }
+
     await sock.sendMessage(from, { text: '⏳ Downloading audio...' }, { quoted: msg });
 
     try {
-      const apiUrl = `https://btch.foo.ng/api/youtube?url=${encodeURIComponent(url)}&type=mp3`;
-      const res = await fetch(apiUrl);
-      const data = await res.json();
+      const data = await downloadYT(url, 'mp3');
 
-      if (data.status && data.result) {
-        const audioUrl = data.result.mp3 || data.result.audio;
-        if (audioUrl) {
-          await sock.sendMessage(from, {
-            audio: { url: audioUrl },
-            mimetype: 'audio/mp4',
-            fileName: `${data.result.title || 'audio'}.mp3`,
-            caption: `🎵 *YOUTUBE AUDIO*\n\n${data.result.title || ''}`
-          }, { quoted: msg });
-          return;
-        }
-      }
-      await sock.sendMessage(from, { text: '❌ Audio tidak ditemukan.' }, { quoted: msg });
+      await sock.sendMessage(from, {
+        audio: toMedia(data),
+        mimetype: data.mimetype || 'audio/mp4',
+        fileName: `${data.title || 'audio'}.m4a`,
+        ptt: false,
+      }, { quoted: msg });
+
+      console.log('✅ YT audio terkirim');
     } catch (e) {
-      await sock.sendMessage(from, { text: `❌ Error: ${e.message}` }, { quoted: msg });
+      console.error('❌ YTMP3 error:', e.message);
+      await sock.sendMessage(from, {
+        text: `❌ *Gagal download*\n\n${e.message}`,
+      }, { quoted: msg });
     }
-  }
+  },
 };
