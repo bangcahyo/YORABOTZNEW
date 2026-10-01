@@ -13,8 +13,10 @@ module.exports = {
     const soal = random(list);
     gameState[from] = { game: 'tebakkata', jawab: soal.jawab, sender };
     setGameTimeout(from, async () => {
-      await sock.sendMessage(from, { text: `⏰ *WAKTU HABIS!*\n\nJawaban: *${soal.jawab}*\n\n_Ketik_ *${config.prefix}tebakkata* _untuk main lagi._` });
+      await sock.sendMessage(from, { text: `⏰ *WAKTU HABIS!*\n\nJawaban: *${soal.jawab}*` });
     });
-    await sock.sendMessage(from, { text: `📝 *TEBAK KATA*\n\n❓ ${soal.soal}\n\nJawab: *${config.prefix}jawabkata <jawaban>*\nNyerah: *${config.prefix}nyerah*\n\n⏱️ 60 detik\nHadiah: +Rp 750, +3 Point` }, { quoted: msg });
+    await sock.sendMessage(from, {
+      text: `📝 *TEBAK KATA*\n\n❓ ${soal.soal}\n\n💬 *Ketik jawabanmu langsung di chat!*\n🏳️ Ketik *nyerah* untuk skip\n\n⏱️ 60 detik | +Rp 750, +3 Point`
+    });
   }
 };
