@@ -1,6 +1,6 @@
 {
   "name": "yora-botz",
-  "version": "6.0.0",
+  "version": "7.1.1",
   "description": "Yora Botz - Multi-Fitur WhatsApp Bot",
   "main": "index.js",
   "scripts": {
@@ -9,10 +9,14 @@
   "author": "Cahyo Store",
   "license": "MIT",
   "dependencies": {
+    "@distube/ytdl-core": "^4.16.12",
     "@hapi/boom": "^10.0.1",
     "@whiskeysockets/baileys": "6.7.24",
     "pino": "^9.0.0",
     "sharp": "^0.32.6",
     "wa-sticker-formatter": "^4.4.4"
+  },
+  "engines": {
+    "node": ">=20"
   }
 }

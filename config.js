@@ -3,32 +3,60 @@ module.exports = {
   //                    INFORMASI BOT
   // ═══════════════════════════════════════════════════════
   botName: 'Yora Botz',
-  botNumber: '6282228307663',           // ⚠️ Nomor bot (format 62xxx)
+  botNumber: '6282228307663',
   ownerName: 'Cahyo Store',
-  ownerNumber: '628139525985',          // ⚠️ Nomor owner (format 62xxx)
-  ownerLID: '',                          // LID owner (opsional, dari .cekLID)
+  ownerNumber: '628139525985',
+  ownerLID: '33033365233764@lid',
   website: 'https://fityorastore.netlify.app/',
-
-  // ═══════════════════════════════════════════════════════
-  //                    PENGATURAN BOT
-  // ═══════════════════════════════════════════════════════
   prefix: '.',
   sessionName: 'session',
-  botMode: 'public',                     // 'public' | 'self'
+  botMode: 'public',
 
   // ═══════════════════════════════════════════════════════
-  //                    EKONOMI DEFAULT
+  //                    EKONOMI
   // ═══════════════════════════════════════════════════════
   defaultLimit: 20,
   defaultMoney: 1000,
   defaultPoint: 0,
 
+  // ═══════════════════════════════════════════════════════════════
+  //                    PREMIUM  🅟
+  // ═══════════════════════════════════════════════════════════════
+  premium: {
+    enabled: true,              // true = sistem premium aktif
+    price: 50000,               // harga beli premium pakai uang (Rp)
+    durationDays: 30,           // durasi default premium (hari)
+    dailyLimit: 100,            // limit harian untuk user premium
+    dailyMoneyMultiplier: 2,    // pengali hadiah .daily
+    expMultiplier: 2,           // pengali EXP per pesan
+    shopDiscount: 20,           // diskon shop (%) untuk premium
+    maxLimit: 9999,             // batas maksimal limit premium
+  },
+
+  // Fitur yang HANYA bisa dipakai user premium (🅟)
+  premiumOnly: [
+    'tourl', 'emojimix',
+    'youtube', 'ytmp4', 'ytmp3', 'tiktok', 'instagram', 'ig',
+  ],
+
+  // ═══════════════════════════════════════════════════════════════
+  //                    LIMIT  🅛
+  // ═══════════════════════════════════════════════════════════════
+  limitCost: {
+    default: 1,                 // biaya limit default per command
+    youtube: 3, ytmp4: 3, ytmp3: 3, tiktok: 3, instagram: 3, ig: 3,
+    tourl: 2, emojimix: 2,
+    sticker: 1, toimg: 1,
+    // Game & fun & info = gratis (0) kecuali diatur di bawah
+  },
+
+
   // ═══════════════════════════════════════════════════════
-  //                    GAME SETTINGS
+  //                    GAME
   // ═══════════════════════════════════════════════════════
   maxBet: 10000,
   minBet: 100,
-  gameTimeout: 60000,                    // 60 detik
+  gameTimeout: 60000,
 
   // ═══════════════════════════════════════════════════════
   //                    ANTI SPAM
@@ -40,66 +68,88 @@ module.exports = {
   warningBeforeMute: 2,
 
   // ═══════════════════════════════════════════════════════
-  //              MEDIA URL — TANPA FILE LOKAL
+  //                    REGISTRASI
   // ═══════════════════════════════════════════════════════
-  // Upload gambar & voice ke Catbox.moe atau host lain
-  // Lalu paste URL-nya di sini
+  registrationRequired: true,        // true = wajib daftar dulu
+  registerImageUrl: '',              // Gambar halaman registrasi
 
-  menuImageUrl: 'https://files.catbox.moe/dn8hny.jpg',                      // URL gambar menu
-  voiceMenuUrl: 'https://files.catbox.moe/ogk89j.ogg',                      // URL voice menu (.ogg OPUS)
-  voiceOwnerUrl: 'https://files.catbox.moe/jfzn27.ogg',                     // URL voice owner (.ogg OPUS)
+  // ═══════════════════════════════════════════════════════
+  //                    MEDIA URL
+  // ═══════════════════════════════════════════════════════
+  menuImageUrl: '',
+  voiceMenuUrl: '',
+  voiceOwnerUrl: '',
+  sendMenuAs: 'both',
+  sendOwnerAs: 'both',
 
-  // Pengaturan kirim media
-  sendMenuAs: 'both',                    // 'text' | 'voice' | 'image' | 'both'
-  sendOwnerAs: 'both',                   // 'text' | 'voice' | 'both'
+  // ═══════════════════════════════════════════════════════
+  //                    AUTO BROADCAST WAKTU
+  // ═══════════════════════════════════════════════════════
+  // Target bisa diisi lewat perintah:  .ab add (di grup tujuan)  atau  .ab addall
+  // Pengaturan dari perintah disimpan di database/autobroadcast.json
+  // dan MENGALAHKAN nilai di bawah ini.
+  autoBroadcast: {
+    enabled: true,
+    timezone: 'Asia/Jakarta',
+    targets: [],          // contoh: ['120363xxxxxxxxxx@g.us']
+    allGroups: false,     // true = kirim ke SEMUA grup yang diikuti bot
+    catchUpHours: 1,      // toleransi telat (jam) jika bot baru nyala setelah jadwal
+  },
+
+  waktuPesan: {
+    pagi: {
+      jam: 6,
+      text: `🌞 *SELAMAT PAGI* 🌞\n\n━━━━━━━━━━━━━━━━━━━━━━\n\n✨ Semoga harimu menyenangkan\n☕ Jangan lupa sarapan dulu\n🤲 Berdoa sebelum aktivitas\n💪 Tetap semangat jalani hari\n\n━━━━━━━━━━━━━━━━━━━━━━\n\n_"Awal yang baik akan membawa hasil yang baik"_`,
+    },
+    siang: {
+      jam: 12,
+      text: `☀️ *SELAMAT SIANG* ☀️\n\n━━━━━━━━━━━━━━━━━━━━━━\n\n🍽️ Waktunya istirahat & makan\n🕌 Jangan lupa sholat Dzuhur\n😴 Rehat sejenak dari rutinitas\n💧 Minum air putih yang cukup\n\n━━━━━━━━━━━━━━━━━━━━━━\n\n_"Kesehatan adalah investasi terbaik"_`,
+    },
+    sore: {
+      jam: 15,
+      text: `🌤️ *SELAMAT SORE* 🌤️\n\n━━━━━━━━━━━━━━━━━━━━━━\n\n⏰ Setengah hari telah berlalu\n🍵 Waktunya ngopi & santai\n📊 Evaluasi yang sudah dikerjakan\n🎯 Fokus ke target selanjutnya\n\n━━━━━━━━━━━━━━━━━━━━━━\n\n_"Istirahat bukan berarti berhenti"_`,
+    },
+    petang: {
+      jam: 18,
+      text: `🌆 *SELAMAT PETANG* 🌆\n\n━━━━━━━━━━━━━━━━━━━━━━\n\n🏠 Waktunya pulang ke rumah\n🕌 Jangan lupa sholat Maghrib\n👨‍👩‍👧‍👦 Kumpul bareng keluarga\n🍽️ Nikmati makan malam\n\n━━━━━━━━━━━━━━━━━━━━━━\n\n_"Rumah adalah tempat ternyaman"_`,
+    },
+    malam: {
+      jam: 21,
+      text: `🌙 *SELAMAT MALAM* 🌙\n\n━━━━━━━━━━━━━━━━━━━━━━\n\n😴 Waktunya istirahat\n📱 Kurangi main HP dulu\n🤲 Berdoa sebelum tidur\n💤 Semoga mimpi indah\n\n━━━━━━━━━━━━━━━━━━━━━━\n\n_"Tidur cukup, bangun semangat"_`,
+    },
+  },
 
   // ═══════════════════════════════════════════════════════
   //                    GRUP RESMI
   // ═══════════════════════════════════════════════════════
   officialGroup: {
     name: 'Grup Resmi Yora Botz',
-    link: 'https://chat.whatsapp.com/GRj7DL7U8w44CTmGcFC5v2',
+    link: 'https://chat.whatsapp.com/K97NhtfCxoV90vJ2ub419I?s=cl&p=a&mlu=4&ilr=4',
     desc: 'Grup diskusi, info update, & bantuan bot',
   },
 
   // ═══════════════════════════════════════════════════════
   //                    WHITELIST GRUP
   // ═══════════════════════════════════════════════════════
-  // Bot hanya bisa masuk grup yang ada di list ini
-  // Cara dapat ID: ketik .id di grup
-  
-  whitelistGroup: {
-    enabled: false,                      // true = aktifkan whitelist
-    groups: [
-      // '628123456789-1234567890@g.us',
-    ],
-  },
+  whitelistGroup: { enabled: false, groups: [] },
 
   // ═══════════════════════════════════════════════════════
   //                    LEVEL SYSTEM
   // ═══════════════════════════════════════════════════════
   levelSystem: {
     enabled: true,
-    expPerMessage: 10,                   // EXP per pesan
-    expCooldown: 30000,                  // Cooldown 30 detik
+    expPerMessage: 10,
+    expCooldown: 30000,
     maxLevel: 100,
-    rewardPerLevelUp: {
-      money: 500,
-      point: 5,
-      limit: 1,
-    },
+    rewardPerLevelUp: { money: 500, point: 5, limit: 1 },
   },
 
   // ═══════════════════════════════════════════════════════
-  //                    TQTO (THANKS TO)
+  //                    TQTO
   // ═══════════════════════════════════════════════════════
   tqto: {
     title: 'THANKS TO',
-    contributors: [
-      'Cahyo Store',
-      'Baileys Team',
-      'Kamu',
-    ],
+    contributors: ['Cahyo Store', 'Baileys Team', 'Kamu'],
     footer: 'Terima kasih telah menggunakan bot ini!',
   },
 };

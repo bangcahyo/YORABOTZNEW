@@ -6,7 +6,7 @@
 
 **Bot WhatsApp Multi-Fitur dengan Pairing Code — Tanpa QR**
 
-[![Version](https://img.shields.io/badge/v6.0.0-blue?style=flat-square)](https://github.com/bangcahyo/YoraBotz)
+[![Version](https://img.shields.io/badge/v7.1.1-blue?style=flat-square)](https://github.com/bangcahyo/YoraBotz)
 [![Node](https://img.shields.io/badge/node-%3E%3D18-green?style=flat-square)](https://nodejs.org/)
 [![Baileys](https://img.shields.io/badge/baileys-6.7.24-purple?style=flat-square)](https://github.com/WhiskeySockets/Baileys)
 [![License](https://img.shields.io/badge/license-MIT-yellow?style=flat-square)](LICENSE)
@@ -22,17 +22,154 @@
 | | |
 |---|---|
 | 🔐 **Pairing Code** | Login tanpa QR — cukup kode 8 digit |
+| 🅟 **Premium System** | Fitur eksklusif premium + kelola dari chat |
+| 🅛 **Limit System** | Biaya limit per command (download, tools, dll) |
 | 🎨 **Sticker** | Bikin sticker dari gambar/video |
 | 📤 **To URL** | Upload media → link publik |
-| 📖 **Wikipedia** | Cari artikel dari Wikipedia |
+| 📥 **Downloader** | YouTube, TikTok, Instagram (premium) |
+| 📚 **Wikipedia** | Cari artikel dari Wikipedia |
 | 🌤️ **Cuaca** | Info cuaca real-time |
-| 💑 **Cek Jodoh** | Ramalan kecocokan |
-| 🔮 **Cek Sifat** | Ramalan sifat nama |
-| 🎮 **Game** | Slot, dadu, koin, tebak-tebakan |
-| 💰 **Ekonomi** | Limit, uang, point, daily |
+| 🎮 **40 Game** | Slot, dadu, tebak-tebakan, family100, dll |
+| 🎲 **19 Menu Fun** | Quote, pantun, puisi, gombalan, zodiak, dll |
+| 💰 **Ekonomi** | Limit, uang, point, daily, shop, premium |
 | 📊 **Level System** | Naik level dari aktivitas chat |
 | 🛡️ **Group Admin** | Anti-link, anti-spam, welcome |
-| 👑 **Owner Tools** | Backup, config editor, broadcast |
+| 👑 **Owner Tools** | Backup, config editor, broadcast, premium |
+
+---
+
+## 🅟🅛 Sistem Premium & Limit
+
+Yora Botz v7.1 memperkenalkan **dua sistem ekonomi baru** yang membuat bot lebih seimbang dan menguntungkan.
+
+### 🅟 Premium
+
+Fitur premium ditandai dengan **🅟**. User premium mendapatkan keuntungan:
+
+| Keuntungan | Free | Premium 🅟 |
+|---|---|---|
+| Limit harian | 20 | **100** |
+| Multiplier uang | 1x | **2x** |
+| Multiplier EXP | 1x | **2x** |
+| Diskon shop | — | **20%** |
+| Fitur downloader | ❌ | ✅ |
+| Bebas limit | ❌ | ✅ (bypass limit) |
+
+**Cara jadi premium:**
+```
+.premium            → Lihat info & benefit premium
+.premium cek        → Cek status premium kamu
+.premium buy        → Beli premium (bayar pakai uang)
+```
+
+**Owner bisa kelola premium:**
+```
+.addpremium @user 30    → Kasih premium 30 hari
+.delpremium @user       → Cabut premium
+.listpremium            → Daftar user premium aktif
+```
+
+### 🅛 Limit
+
+Fitur yang memakai limit ditandai dengan **🅛**. Setiap command punya biaya berbeda:
+
+| Command | Biaya Limit |
+|---|---|
+| `youtube` / `ytmp3` / `ytmp4` | 3 |
+| `tiktok` / `instagram` | 3 |
+| `tourl` / `emojimix` | 2 |
+| `sticker` / `toimg` | 1 |
+| Command lain | 1 |
+
+> **Catatan:** Owner & user premium **tidak dipotong limit**. Semua **game & fun 100% GRATIS** (tanpa limit) supaya tidak bosen main.
+
+```
+.limit              → Cek limit kamu + status premium
+.limit info         → Lihat daftar fitur berlimit
+```
+
+---
+
+## 🆕 Changelog v7.1.1
+
+### 🔑 Tanpa API Key
+- **Semua penggunaan API key Autoresbot dihapus** dari `config.js` dan `lib/downloader.js`. Bot tidak butuh key apa pun.
+- **Downloader ditulis ulang** dan berjalan tanpa key:
+  - TikTok → tikwm.com (video & slideshow foto)
+  - YouTube → `@distube/ytdl-core` (video maks 720p, audio m4a, durasi maks 15 menit)
+  - Instagram → halaman embed publik (post / reel publik)
+  - Opsional: pasang [`yt-dlp`](https://github.com/yt-dlp/yt-dlp) di server (atau set env `YTDLP_PATH`) → otomatis dipakai sebagai cadangan jika metode utama gagal.
+- Dependency baru: `@distube/ytdl-core`. Jalankan `npm install` setelah update.
+
+### 📢 Auto Broadcast Diperbaiki
+- **Tidak lagi diam saat target kosong** — muncul peringatan jelas di console & di `.ab status`.
+- **Status "sudah terkirim" disimpan ke file** (`database/autobroadcast-state.json`) → tidak kirim dobel setelah bot restart.
+- **Retry otomatis** (maks 3x) jika semua target gagal; menunggu koneksi siap sebelum mengirim.
+- **Jam tengah malam benar** (tidak lagi terbaca "24").
+- **Perintah baru:** `.ab addall`, `.ab all on/off`, `.ab list`, `.ab clear`, `.ab send <periode>`, `.ab add/del <jid>`.
+- Scheduler berhenti otomatis saat koneksi putus dan menyala lagi dengan socket baru.
+
+### ⚙️ Cara Cepat Menyalakan Auto Broadcast
+1. Masuk ke grup tujuan, ketik `.ab add` (atau `.ab addall` untuk semua grup).
+2. Ketik `.ab test` untuk mengecek, atau `.ab send pagi` untuk kirim pesan pagi sekarang.
+3. Selesai — pesan terkirim otomatis sesuai jadwal di `waktuPesan` (`config.js`).
+
+---
+
+## 🆕 Changelog v7.1
+
+### 🅟 Sistem Premium Baru
+- **Premium system lengkap** — user premium dapat limit 100/hari, multiplier uang & EXP 2x, diskon shop 20%, serta akses fitur downloader.
+- **Plugin premium** (`.premium`) — cek status, lihat benefit, dan beli premium pakai uang.
+- **Plugin owner** — `.addpremium`, `.delpremium`, `.listpremium` untuk kelola premium langsung dari chat.
+- **Auto-expire** — premium otomatis hangus saat masa aktif berakhir.
+
+### 🅛 Sistem Limit Baru
+- **Biaya limit per command** — download 3, tourl 2, sticker 1, dst. Bisa diatur di `config.js`.
+- **Bypass premium & owner** — premium/owner tidak dipotong limit.
+- **Plugin limit** (`.limit`) — cek limit + daftar fitur berlimit.
+
+### 🎮 10 Game Baru
+- `.tebakbendera` — Tebak negara dari bendera 🇮🇩
+- `.tebaksurah` — Tebak surah Al-Qur'an
+- `.tebakpresiden` — Tebak presiden
+- `.tebakplanet` — Tebak planet tata surya
+- `.tebakanime` — Tebak judul anime
+- `.asahotak` — Soal asah otak
+- `.siapakahaku` — Riddle "siapakah aku?"
+- `.caklontong` — Tebak-tebakan receh ala Cak Lontong
+- `.lengkapikalimat` — Lengkapi kalimat peribahasa
+- `.family100` — Family 100 (jawab banyak kemungkinan)
+
+### 🎲 Fun Diperbanyak (11 Plugin Baru)
+- `.dare` — Tantangan dare
+- `.faktaunik` — Fakta unik
+- `.ceritahoror` — Cerita horor
+- `.ceritahumor` — Cerita lucu
+- `.gombalan` — Gombalan receh
+- `.pickupline` — Pickup line
+- `.bucin` — Kata-kata bucin
+- `.zodiak` — Ramalan zodiak (12 zodiak)
+- `.cekganteng` / `.cekcantik` — Cek skor (hiburan)
+- `.artinama` — Arti nama
+
+### 📈 Konten Diperbanyak
+- **Quiz** — dari ~85 soal jadi **222 soal** biar tidak bosen.
+- **Quote** (40), **pantun** (30), **motivasi** (30), **katabijak** (30), **puisi** (10 tema), **ramalan** (30), **truth/dare** (masing-masing 25/30).
+
+### 🐛 Perbaikan Bug (dari v7.0)
+- **Plugin `.daftar` (registrasi) dibuat ulang** — sebelumnya file ini *hilang* padahal `registrationRequired: true`. Kini registrasi berjalan normal + bonus pendaftaran (5 limit & Rp 500).
+- **`menulevel.js` dipulihkan** — sebelumnya berisi menu *tools* (salah copy-paste).
+- **Plugin `.autobroadcast` dibuat** — sebelumnya ditampilkan di menu owner tapi pluginnya tidak ada.
+- **5 game "hantu" dilengkapi** — `.tebakibukota`, `.tebakfilm`, `.tebaklagu`, `.tebakpemainbola`, `.tebakgambar`.
+- **Handler `nyerah` generik** — otomatis bekerja untuk semua game.
+- **Sinkronisasi versi** — `package.json`, `index.js`, dan README seragam di **v7.1.0**.
+- **Bersih-bersih** — 15 file `.bak` usang dihapus.
+
+### ✅ Hasil Verifikasi
+- 141 plugin dimuat **tanpa error**.
+- 0 command di menu yang tanpa plugin (0 "pajangan").
+- Semua file JS lolos pengecekan sintaks.
 
 ---
 
@@ -108,13 +245,21 @@ yora-botz/
 ├── 📁 lib/
 │   ├── 📄 database.js
 │   ├── 📄 helper.js
-│   └── 📄 level.js
+│   ├── 📄 level.js
+│   ├── 📄 premium.js       ← helper premium 🅟
+│   └── 📄 ...
 ├── 📁 plugins/
-│   ├── 📁 menu/       (7 plugin)
-│   ├── 📁 info/       (3 plugin)
-│   ├── 📁 sticker/    (2 plugin)
-│   ├── 📁 tools/      (4 plugin)
-│   └── 📁 owner/      (5 plugin)
+│   ├── 📁 menu/       (8 plugin)
+│   ├── 📁 game/       (40 plugin)
+│   ├── 📁 fun/        (19 plugin)
+│   ├── 📁 ekonomi/    (10 plugin)
+│   ├── 📁 level/      (5 plugin)
+│   ├── 📁 group/      (12 plugin)
+│   ├── 📁 tools/      (5 plugin)
+│   ├── 📁 download/   (4 plugin)
+│   ├── 📁 info/       (6 plugin)
+│   ├── 📁 sticker/    (3 plugin)
+│   └── 📁 owner/      (29 plugin)
 ├── 📁 database/       (auto-generate)
 ├── 📁 session/        (auto-generate)
 └── 📁 assets/         (opsional)
@@ -123,6 +268,8 @@ yora-botz/
 ---
 
 ## 🎯 Daftar Command
+
+> **Legend:** 🅟 = Fitur Premium · 🅛 = Pakai Limit · 🆓 = Gratis
 
 ### 📂 Menu
 ```
@@ -138,14 +285,24 @@ yora-botz/
 
 ### 🎨 Tools
 ```
-.sticker      → Reply gambar → jadi sticker
-.toimg        → Reply sticker → jadi gambar
-.tourl        → Reply media → upload ke link
+.sticker      → Reply gambar → jadi sticker  🅛
+.toimg        → Reply sticker → jadi gambar  🅛
+.tourl        → Reply media → upload ke link  🅛🅟
 .wiki <topik> → Cari di Wikipedia
 .cuaca <kota> → Info cuaca
 .jodoh @user  → Cek jodoh
 .sifat <nama> → Cek sifat
 ```
+
+### 📥 Download (🅟 Premium)
+```
+.youtube <url>    → Download YouTube  🅛🅟
+.ytmp3 <url>      → YouTube audio     🅛🅟
+.ytmp4 <url>      → YouTube video     🅛🅟
+.tiktok <url>     → Download TikTok   🅛🅟
+.instagram <url>  → Download IG       🅛🅟
+```
+_Semua downloader berjalan **tanpa API key**. Opsional: pasang `yt-dlp` di server sebagai cadangan._
 
 ### ℹ️ Info
 ```
@@ -155,13 +312,124 @@ yora-botz/
 .tqto         → Thanks to
 ```
 
+### 🎮 Game (Semua 🆓 Gratis)
+```
+.slot <taruhan>     → Mesin slot
+.dadu <taruhan>     → Lempar dadu
+.koin <taruhan>     → Lempar koin
+.bj <taruhan>       → Blackjack
+.roulette <warna>   → Roulette
+.sicbo <taruhan>    → Sicbo
+.suit <pilihan>     → Suit
+.war <taruhan>      → War
+.wheel <taruhan>    → Roda keberuntungan
+.ttt                → Tic Tac Toe
+.quiz               → Kuis pengetahuan (222 soal)
+.tebakangka         → Tebak angka 1-10
+.tebakkata          → Tebak kata
+.tebakemoji         → Tebak emoji
+.tebakhewan         → Tebak hewan
+.tebakibukota       → Tebak ibu kota
+.tebakfilm          → Tebak judul film
+.tebaklagu          → Tebak judul lagu
+.tebakpemainbola    → Tebak pemain bola
+.tebakgambar        → Tebak gambar (emoji)
+.tebakbendera       → Tebak bendera negara  🆕
+.tebaksurah         → Tebak surah Al-Qur'an  🆕
+.tebakpresiden      → Tebak presiden  🆕
+.tebakplanet        → Tebak planet  🆕
+.tebakanime         → Tebak anime  🆕
+.asahotak           → Soal asah otak  🆕
+.siapakahaku        → Riddle "siapakah aku?"  🆕
+.caklontong         → Tebak-tebakan receh  🆕
+.lengkapikalimat    → Lengkapi kalimat  🆕
+.family100          → Family 100  🆕
+.math               → Soal matematika
+.hangman            → Hangman
+.nyerah             → Skip soal
+```
+
+### 🎲 Fun (Semua 🆓 Gratis)
+```
+.quote              → Quote bijak
+.motivasi           → Kata motivasi
+.pantun             → Pantun lucu
+.katabijak          → Kata bijak
+.puisi              → Puisi (10 tema)
+.ramalan            → Ramalan harian
+.kapankahnikah      → Kapan nikah?
+.truth              → Truth or dare (truth)
+.dare               → Truth or dare (dare)  🆕
+.faktaunik          → Fakta unik  🆕
+.ceritahoror        → Cerita horor  🆕
+.ceritahumor        → Cerita lucu  🆕
+.gombalan           → Gombalan receh  🆕
+.pickupline         → Pickup line  🆕
+.bucin              → Kata bucin  🆕
+.zodiak <zodiak>    → Ramalan zodiak  🆕
+.cekganteng         → Cek skor ganteng  🆕
+.cekcantik          → Cek skor cantik  🆕
+.artinama <nama>    → Arti nama  🆕
+```
+
+### 💰 Ekonomi
+```
+.daftar <nama>      → Registrasi akun
+.profile            → Lihat profil
+.limit              → Cek limit  🅛
+.limit info         → Daftar fitur berlimit  🅛
+.point              → Cek point
+.uang               → Cek uang
+.daily              → Klaim hadiah harian
+.transfer @user     → Transfer uang
+.shop               → Lihat toko
+.buy <item>         → Beli item
+.premium            → Info & beli premium  🅟
+.premium cek        → Cek status premium  🅟
+.premium buy        → Beli premium  🅟
+```
+
+### 📊 Level
+```
+.level              → Info level
+.rank               → Peringkatmu
+.leaderboard        → Top 10 user
+```
+
+### 🛡️ Group Admin
+```
+.antilink on/off    → Anti-link
+.welcome on/off     → Welcome message
+.setwelcome <teks>  → Set teks welcome
+.setgoodbye <teks>  → Set teks goodbye
+.kick @user         → Keluarkan member
+.promote @user      → Jadikan admin
+.demote @user       → Cabut admin
+.tagall <teks>      → Tag semua member
+.groupinfo          → Info grup
+```
+
 ### 👑 Owner Only
 ```
-.self         → Mode self
-.public       → Mode public
-.mode         → Cek mode bot
-.addmoney @u  → Tambah uang
-.broadcast    → Broadcast ke semua grup
+.self               → Mode self
+.public             → Mode public
+.mode               → Cek mode bot
+.addmoney @u <jml>  → Tambah uang
+.addlimit @u <jml>  → Tambah limit
+.addpoint @u <jml>  → Tambah point
+.broadcast <teks>   → Broadcast ke semua grup
+.autobroadcast      → Kelola auto broadcast (.ab)
+.ab add / addall   → Tambah target (grup ini / semua grup)
+.ab send <periode> → Kirim pesan sekarang (pagi/siang/sore/petang/malam)
+.backup             → Backup database
+.restore            → Restore database
+.setcfg <k> <v>     → Ubah config
+.toggle <key>       → Toggle config
+.reloadplugins      → Reload plugin
+.restartbot         → Restart bot
+.addpremium @u <hr> → Kasih premium  🅟🆕
+.delpremium @u      → Cabut premium  🅟🆕
+.listpremium        → Daftar user premium  🅟🆕
 ```
 
 ---
@@ -194,6 +462,29 @@ module.exports = {
   antiSpam: true,
   spamLimit: 5,
   spamInterval: 5000,
+
+  // 🅟 Premium
+  premium: {
+    enabled: true,
+    price: 50000,
+    durationDays: 30,
+    dailyLimit: 100,
+    dailyMoneyMultiplier: 2,
+    expMultiplier: 2,
+    shopDiscount: 20,
+  },
+
+  // 🅟 Fitur premium only
+  premiumOnly: ['tourl', 'emojimix', 'youtube', 'ytmp4', 'ytmp3', 'tiktok', 'instagram', 'ig'],
+
+  // 🅛 Biaya limit per command
+  limitCost: {
+    default: 1,
+    youtube: 3, ytmp4: 3, ytmp3: 3,
+    tiktok: 3, instagram: 3, ig: 3,
+    tourl: 2, emojimix: 2,
+    sticker: 1, toimg: 1,
+  },
 };
 ```
 
@@ -252,6 +543,8 @@ pm2 startup
 | Owner tidak dikenali | Pakai nomor format `62xxx` di `config.js` |
 | Sticker error `sharp` | Upload `node_modules` dari Codespaces |
 | Menu tidak muncul | Cek log console, screenshot error |
+| Fitur premium tidak jalan | Cek `.premium cek`, pastikan masih aktif |
+| Limit cepat habis | Jadi premium 🅟 atau tunggu reset 24 jam |
 
 ### 🆘 Kode Pairing Selalu Gagal?
 
@@ -273,16 +566,24 @@ rm -rf session
 
 ```
 ╔══════════════════════════════════╗
-║   📦 YORA BOTZ v6.0              ║
+║   📦 YORA BOTZ v7.1.1            ║
 ╚══════════════════════════════════╝
-  📁 Menu       : 7 plugin
-  📁 Info       : 3 plugin
-  📁 Sticker    : 2 plugin
-  📁 Tools      : 4 plugin
-  📁 Owner      : 5 plugin
-  ─────────────────────────────
-  📊 Total      : 21+ plugin
-  🚀 Fitur      : 50+ command
+  📁 Menu       : 8 plugin
+  📁 Game       : 40 plugin
+  📁 Ekonomi    : 10 plugin
+  📁 Level      : 5 plugin
+  📁 Group      : 12 plugin
+  📁 Tools      : 5 plugin
+  📁 Download   : 4 plugin
+  📁 Fun        : 19 plugin
+  📁 Info       : 6 plugin
+  📁 Sticker    : 3 plugin
+  📁 Owner      : 29 plugin
+  ───────────────────────────────
+  📊 Total      : 141 plugin
+  🚀 Fitur      : 240+ command
+  🅟 Premium    : aktif
+  🅛 Limit      : aktif
 ```
 
 ---

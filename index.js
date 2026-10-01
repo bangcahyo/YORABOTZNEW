@@ -1,6 +1,6 @@
 // ============================================================
-//   YORA BOTZ v6.0 — Pairing Code Fixed
-//   Baileys 6.7.24
+//   YORA BOTZ v7.1.1
+//   Owner: Cahyo Store (08139525985)
 // ============================================================
 
 const {
@@ -21,22 +21,33 @@ const config = require('./config');
 const database = require('./lib/database');
 const helper = require('./lib/helper');
 const level = require('./lib/level');
+const premiumLib = require('./lib/premium');
 
-const {
-  getUser, updateUser, loadDB, saveDB,
-  loadGroups, saveGroups, getGroupSettings, updateGroupSettings,
-  loadMode, saveMode,
-} = database;
+const getUser = database.getUser;
+const updateUser = database.updateUser;
+const loadDB = database.loadDB;
+const saveDB = database.saveDB;
+const loadGroups = database.loadGroups;
+const saveGroups = database.saveGroups;
+const getGroupSettings = database.getGroupSettings;
+const updateGroupSettings = database.updateGroupSettings;
+const loadMode = database.loadMode;
+const saveMode = database.saveMode;
 
-const {
-  isOwner, isSenderOwner, isGroup, random, formatMoney,
-  isGroupAllowed, checkSpam, spamTracker,
-} = helper;
+const isOwner = helper.isOwner;
+const isSenderOwner = helper.isSenderOwner;
+const isGroup = helper.isGroup;
+const random = helper.random;
+const formatMoney = helper.formatMoney;
+const isGroupAllowed = helper.isGroupAllowed;
+const checkSpam = helper.checkSpam;
+const spamTracker = helper.spamTracker;
 
 config.botMode = loadMode();
 
 // ============ FOLDER ============
-['database', 'session', 'assets'].forEach(f => {
+const folders = ['database', 'session', 'assets'];
+folders.forEach(function(f) {
   const p = path.join(__dirname, f);
   if (!fs.existsSync(p)) fs.mkdirSync(p, { recursive: true });
 });
@@ -47,17 +58,59 @@ const gameTimers = {};
 
 function setGameTimeout(roomId, cb) {
   clearGameTimeout(roomId);
-  gameTimers[roomId] = setTimeout(async () => {
+  gameTimers[roomId] = setTimeout(async function() {
     if (gameState[roomId]) {
-      try { await cb(); } catch {}
+      try { await cb(); } catch (e) {}
       delete gameState[roomId];
     }
     delete gameTimers[roomId];
   }, config.gameTimeout || 60000);
 }
+
 function clearGameTimeout(roomId) {
-  if (gameTimers[roomId]) { clearTimeout(gameTimers[roomId]); delete gameTimers[roomId]; }
+  if (gameTimers[roomId]) {
+    clearTimeout(gameTimers[roomId]);
+    delete gameTimers[roomId];
+  }
 }
+
+// ============ LIMIT & PREMIUM HELPER ============
+// Biaya limit sebuah command (0 = gratis)
+function getLimitCost(command) {
+  const costs = config.limitCost || {};
+  if (Object.prototype.hasOwnProperty.call(costs, command)) return costs[command];
+  return costs.default !== undefined ? costs.default : 1;
+}
+
+// Apakah command khusus premium
+function isPremiumCommand(command) {
+  return premiumLib.isPremiumOnly(command);
+}
+
+// Command yang TIDAK memotong limit (gratis / info / menu / owner)
+const noLimitCommands = [
+  'menu', 'help', 'menugame', 'menugames', 'menufun', 'menuhiburan',
+  'menuekonomi', 'menueco', 'menulevel', 'menugroup', 'menuadmin',
+  'menuowner', 'menuown', 'menutools', 'menudownload', 'menu',
+  'runtime', 'uptime', 'rt', 'profile', 'profil',
+  'owner', 'ownerku', 'own', 'info', 'botinfo',
+  'mode', 'botmode', 'self', 'public', 'ping',
+  'tqto', 'thanks', 'credit', 'fitur', 'features', 'commands',
+  'daftar', 'register', 'reg',
+  'limit', 'point', 'uang', 'money', 'daily', 'shop',
+  'level', 'lvl', 'rank', 'peringkat', 'leaderboard', 'lb', 'top',
+  'antilink', 'antispam', 'unmute', 'welcome', 'setwelcome', 'setgoodbye',
+  'kick', 'promote', 'demote', 'tagall', 'groupinfo',
+  'id', 'groupid', 'cekid',
+  'addlimit', 'addmoney', 'addpoint', 'setlimit', 'setmoney', 'resetuser',
+  'broadcast', 'backup', 'backupdb', 'restore', 'restoredb', 'restoreyes', 'restoreno',
+  'getcfg', 'getconfig', 'setcfg', 'setconfig', 'reloadcfg', 'reloadconfig',
+  'showconfig', 'showcfg', 'toggle', 'readfile', 'listfiles', 'ls',
+  'savefile', 'sf', 'upload', 'reloadplugins', 'reloadp', 'reload',
+  'restartbot', 'restart', 'reboot', 'autobroadcast', 'ab', 'waktubc',
+  'premium', 'prem', 'buypremium', 'addpremium', 'delpremium', 'listpremium', 'cekpremium',
+  'nyerah', 'menyerah', 'giveup', 'skip',
+];
 
 // ============ LOAD PLUGINS ============
 const plugins = new Map();
@@ -65,35 +118,49 @@ const pluginList = [];
 
 function loadPlugins() {
   const dir = path.join(__dirname, 'plugins');
-  if (!fs.existsSync(dir)) return console.log('⚠️ Folder plugins/ tidak ada');
+  if (!fs.existsSync(dir)) {
+    console.log('⚠️ Folder plugins tidak ada');
+    return;
+  }
 
-  const cats = fs.readdirSync(dir).filter(f => fs.statSync(path.join(dir, f)).isDirectory());
+  const cats = fs.readdirSync(dir).filter(function(f) {
+    return fs.statSync(path.join(dir, f)).isDirectory();
+  });
+
   console.log('\n╔══════════════════════════════════╗');
   console.log('║      📦 PLUGINS BERHASIL DIMUAT    ║');
   console.log('╚══════════════════════════════════╝');
 
   for (const cat of cats) {
     const catPath = path.join(dir, cat);
-    const files = fs.readdirSync(catPath).filter(f => f.endsWith('.js'));
+    const files = fs.readdirSync(catPath).filter(function(f) {
+      return f.endsWith('.js');
+    });
+
     let count = 0;
     for (const file of files) {
       try {
-        delete require.cache[require.resolve(path.join(catPath, file))];
-        const p = require(path.join(catPath, file));
+        const fullPath = path.join(catPath, file);
+        delete require.cache[require.resolve(fullPath)];
+        const p = require(fullPath);
         if (!p.name || !p.execute) continue;
         p.category = p.category || cat;
         p.aliases = p.aliases || [];
         pluginList.push(p);
         plugins.set(p.name.toLowerCase(), p);
-        p.aliases.forEach(a => plugins.set(a.toLowerCase(), p));
+        p.aliases.forEach(function(a) {
+          plugins.set(a.toLowerCase(), p);
+        });
         count++;
       } catch (err) {
-        console.log(`  ❌ ${cat}/${file}: ${err.message}`);
+        console.log('  ❌ ' + cat + '/' + file + ': ' + err.message);
       }
     }
-    if (count > 0) console.log(`  📁 ${cat.padEnd(10)} : ${count} plugin`);
+    if (count > 0) {
+      console.log('  📁 ' + cat.padEnd(10) + ' : ' + count + ' plugin');
+    }
   }
-  console.log(`  📊 Total    : ${pluginList.length} plugin\n`);
+  console.log('  📊 Total    : ' + pluginList.length + ' plugin\n');
 }
 
 // ============ BUILD CONTEXT ============
@@ -105,16 +172,58 @@ function buildContext(sock, msg, args) {
   const mentioned = msg.message.extendedTextMessage?.contextInfo?.mentionedJid || [];
   const user = getUser(sender);
 
-  return {
-    config, from, sender, senderNumber, pushName, mentioned, user, args, msg, sock,
-    downloadMediaMessage,
-    getUser, updateUser, loadDB, saveDB,
-    loadGroups, saveGroups, getGroupSettings, updateGroupSettings, saveMode,
-    isOwner, isSenderOwner: () => isSenderOwner(msg, sender), isGroup,
-    isGroupAllowed, random, formatMoney, checkSpam, spamTracker,
-    gameState, gameTimers, setGameTimeout, clearGameTimeout,
-    ...level,
+  const ctx = {
+    config: config,
+    from: from,
+    sender: sender,
+    senderNumber: senderNumber,
+    pushName: pushName,
+    mentioned: mentioned,
+    user: user,
+    args: args,
+    msg: msg,
+    sock: sock,
+    downloadMediaMessage: downloadMediaMessage,
+    getUser: getUser,
+    updateUser: updateUser,
+    loadDB: loadDB,
+    saveDB: saveDB,
+    loadGroups: loadGroups,
+    saveGroups: saveGroups,
+    getGroupSettings: getGroupSettings,
+    updateGroupSettings: updateGroupSettings,
+    saveMode: saveMode,
+    isOwner: isOwner,
+    isSenderOwner: function() { return isSenderOwner(msg, sender); },
+    isGroup: isGroup,
+    isGroupAllowed: isGroupAllowed,
+    random: random,
+    formatMoney: formatMoney,
+    checkSpam: checkSpam,
+    spamTracker: spamTracker,
+    gameState: gameState,
+    gameTimers: gameTimers,
+    setGameTimeout: setGameTimeout,
+    clearGameTimeout: clearGameTimeout,
+    getLevelFromExp: level.getLevelFromExp,
+    getExpForLevel: level.getExpForLevel,
+    getExpProgress: level.getExpProgress,
+    addExp: level.addExp,
+    // Premium 🅟
+    isPremium: function() { return premiumLib.isPremium(user); },
+    premiumRemainingDays: function() { return premiumLib.premiumRemainingDays(user); },
+    addPremium: premiumLib.addPremium,
+    removePremium: premiumLib.removePremium,
+    listPremium: premiumLib.listPremium,
+    formatDate: premiumLib.formatDate,
+    isPremiumOnly: premiumLib.isPremiumOnly,
+    premiumLib: premiumLib,
+    // Limit 🅛
+    getLimitCost: getLimitCost,
+    noLimit: noLimitCommands,
   };
+
+  return ctx;
 }
 
 // ============ START BOT ============
@@ -122,30 +231,29 @@ async function startBot() {
   const { state, saveCreds } = await useMultiFileAuthState(config.sessionName);
   const { version } = await fetchLatestBaileysVersion();
 
-  console.log(`📡 Baileys version: ${version.join('.')}`);
+  console.log('📡 Baileys version: ' + version.join('.'));
 
   const sock = makeWASocket({
-    version,
+    version: version,
     logger: pino({ level: 'silent' }),
     printQRInTerminal: false,
     auth: state,
     browser: ['Ubuntu', 'Chrome', '20.0.04'],
     syncFullHistory: false,
     markOnlineOnConnect: true,
-    getMessage: async () => ({ conversation: '' }),
+    getMessage: async function() { return { conversation: '' }; },
   });
 
   sock.ev.on('creds.update', saveCreds);
 
-  // ============================================================
-  //   PAIRING CODE — Trigger di event 'qr' (SESUAI DOKUMENTASI)
-  // ============================================================
+  // ==================== PAIRING CODE ====================
   let codeRequested = false;
 
-  sock.ev.on('connection.update', async (update) => {
-    const { connection, lastDisconnect, qr } = update;
+  sock.ev.on('connection.update', async function(update) {
+    const connection = update.connection;
+    const lastDisconnect = update.lastDisconnect;
+    const qr = update.qr;
 
-    // Trigger pairing code DI EVENT 'qr', bukan 'connecting'
     if (qr && !sock.authState.creds.registered && !codeRequested) {
       codeRequested = true;
 
@@ -161,11 +269,10 @@ async function startBot() {
         process.exit(1);
       }
 
-      console.log(`📞 Nomor bot: ${phone}`);
+      console.log('📞 Nomor bot: ' + phone);
       console.log('⏳ Tunggu 5 detik...\n');
 
-      // Delay 5 detik sebelum request code
-      setTimeout(async () => {
+      setTimeout(async function() {
         try {
           const code = await sock.requestPairingCode(phone);
           const fmt = code.match(/.{1,4}/g)?.join('-') || code;
@@ -173,8 +280,8 @@ async function startBot() {
           console.log('\n╔══════════════════════════════════╗');
           console.log('║   ✅ PAIRING CODE BERHASIL        ║');
           console.log('╚══════════════════════════════════╝');
-          console.log(`\n   📱 Nomor: ${phone}`);
-          console.log(`   🔑 Kode : ${fmt}\n`);
+          console.log('\n   📱 Nomor: ' + phone);
+          console.log('   🔑 Kode : ' + fmt + '\n');
           console.log('══════════════════════════════════');
           console.log('📌 CARA PAKAI:');
           console.log('   1. Buka WhatsApp di HP nomor bot');
@@ -182,79 +289,106 @@ async function startBot() {
           console.log('   3. Tautkan Perangkat');
           console.log('   4. Pilih "Tautkan dengan nomor telepon saja"');
           console.log('   5. Masukkan kode: ' + fmt);
-          console.log('   ⏱️ Kode berlaku 60 detik — cepat!\n');
+          console.log('   ⏱️ Kode berlaku 60 detik\n');
         } catch (e) {
-          console.log('❌ Gagal pairing:', e.message);
-          console.log('💡 Restart bot untuk coba lagi.\n');
+          console.log('❌ Gagal pairing: ' + e.message);
         }
       }, 5000);
     }
 
-    // Handle connection close
     if (connection === 'close') {
+      // hentikan scheduler lama; akan dinyalakan lagi dengan socket baru saat 'open'
+      try { require('./lib/autobroadcast').stopAutoBroadcast(); } catch (e) {}
       const code = new Boom(lastDisconnect?.error)?.output?.statusCode;
       if (code === DisconnectReason.loggedOut) {
-        console.log('⚠️ Bot logout. Hapus session & pairing ulang.');
-        fs.rmSync(path.join(__dirname, config.sessionName), { recursive: true, force: true });
+        const sp = path.join(__dirname, config.sessionName);
+        if (fs.existsSync(sp)) fs.rmSync(sp, { recursive: true, force: true });
         process.exit(0);
       } else {
-        console.log(`🔄 Reconnect (code ${code}) dalam 5 detik...`);
-        setTimeout(() => startBot(), 5000);
+        console.log('🔄 Reconnect (code ' + code + ')...');
+        setTimeout(function() { startBot(); }, 5000);
       }
     } else if (connection === 'open') {
       console.log('\n╔══════════════════════════════════╗');
       console.log('║   ✅ BOT BERHASIL TERHUBUNG!      ║');
       console.log('╚══════════════════════════════════╝');
-      console.log(`🤖 ${config.botName}`);
-      console.log(`📞 ${config.botNumber}`);
-      console.log(`📌 Mode: ${config.botMode.toUpperCase()}`);
-      console.log(`📦 Plugins: ${pluginList.length}\n`);
+      console.log('🤖 ' + config.botName);
+      console.log('📞 ' + config.botNumber);
+      console.log('📌 Mode: ' + config.botMode.toUpperCase());
+      console.log('📦 Plugins: ' + pluginList.length + '\n');
+
+      // Start auto broadcast
+      try {
+        const autobc = require('./lib/autobroadcast');
+        autobc.startAutoBroadcast(sock);
+      } catch (e) {
+        console.log('⚠️ Auto broadcast tidak aktif: ' + e.message);
+      }
     }
   });
 
   // ==================== GROUP EVENTS ====================
-  sock.ev.on('group-participants.update', async (update) => {
+  sock.ev.on('group-participants.update', async function(update) {
     try {
-      const { id, participants, action } = update;
+      const id = update.id;
+      const participants = update.participants;
+      const action = update.action;
+
       const botJid = sock.user.id.split(':')[0] + '@s.whatsapp.net';
-      const botAdded = participants.some(p => p === botJid);
+      const botAdded = participants.some(function(p) { return p === botJid; });
 
       if (action === 'add' && botAdded && !isGroupAllowed(id)) {
         let name = 'Grup';
-        try { name = (await sock.groupMetadata(id)).subject; } catch {}
         try {
-          await sock.sendMessage(id, { text: `❌ Bot hanya untuk grup resmi.\n\nOwner: ${config.ownerNumber}\n\nBot keluar dalam 5 detik...` });
-          await new Promise(r => setTimeout(r, 5000));
-        } catch {}
-        try { await sock.groupLeave(id); } catch {}
+          const meta = await sock.groupMetadata(id);
+          name = meta.subject;
+        } catch (e) {}
+
+        try {
+          await sock.sendMessage(id, {
+            text: '❌ Bot hanya untuk grup resmi.\n\nOwner: ' + config.ownerNumber + '\n\nBot keluar dalam 5 detik...',
+          });
+          await new Promise(function(r) { setTimeout(r, 5000); });
+        } catch (e) {}
+
+        try { await sock.groupLeave(id); } catch (e) {}
+
         try {
           await sock.sendMessage(config.ownerNumber + '@s.whatsapp.net', {
-            text: `🔔 Bot keluar dari grup non-whitelist:\n${name}\nID: ${id}`,
+            text: '🔔 Bot keluar dari grup non-whitelist:\n' + name + '\nID: ' + id,
           });
-        } catch {}
+        } catch (e) {}
         return;
       }
 
       const gs = getGroupSettings(id);
       let groupName = '';
-      try { groupName = (await sock.groupMetadata(id)).subject; } catch { return; }
+      try {
+        const meta = await sock.groupMetadata(id);
+        groupName = meta.subject;
+      } catch (e) {
+        return;
+      }
 
       for (const p of participants) {
         if (p === botJid) continue;
         const num = p.split('@')[0];
+
         if (action === 'add' && gs.welcome) {
-          const t = gs.welcomeText.replace('@user', `@${num}`).replace('@group', groupName);
-          await sock.sendMessage(id, { text: `👋 *WELCOME*\n\n${t}`, mentions: [p] });
+          const t = gs.welcomeText.replace('@user', '@' + num).replace('@group', groupName);
+          await sock.sendMessage(id, { text: '👋 *WELCOME*\n\n' + t, mentions: [p] });
         } else if (action === 'remove' && gs.welcome) {
-          const t = gs.goodbyeText.replace('@user', `@${num}`).replace('@group', groupName);
-          await sock.sendMessage(id, { text: `👋 *GOODBYE*\n\n${t}`, mentions: [p] });
+          const t = gs.goodbyeText.replace('@user', '@' + num).replace('@group', groupName);
+          await sock.sendMessage(id, { text: '👋 *GOODBYE*\n\n' + t, mentions: [p] });
         }
       }
-    } catch (e) { console.error('Group event:', e.message); }
+    } catch (e) {
+      console.error('Group event: ' + e.message);
+    }
   });
 
   // ==================== MESSAGES ====================
-  sock.ev.on('messages.upsert', async (m) => {
+  sock.ev.on('messages.upsert', async function(m) {
     try {
       const msg = m.messages[0];
       if (!msg.message) return;
@@ -277,14 +411,15 @@ async function startBot() {
           let textCek = '';
           if (type === 'conversation') textCek = msg.message.conversation;
           else if (type === 'extendedTextMessage') textCek = msg.message.extendedTextMessage.text || '';
+
           const linkRe = /(https?:\/\/[^\s]+|wa\.me\/[^\s]+|chat\.whatsapp\.com\/[^\s]+)/gi;
           if (textCek && linkRe.test(textCek)) {
             const gm = await sock.groupMetadata(from);
-            const isAdmin = gm.participants.find(p => p.id === sender)?.admin;
+            const isAdmin = gm.participants.find(function(p) { return p.id === sender; })?.admin;
             if (!isAdmin && !isSenderOwner(msg, sender)) {
-              try { await sock.sendMessage(from, { delete: msg.key }); } catch {}
+              try { await sock.sendMessage(from, { delete: msg.key }); } catch (e) {}
               await sock.sendMessage(from, {
-                text: `⚠️ *ANTI-LINK*\n\n@${senderNumber} mengirim link!`,
+                text: '⚠️ *ANTI-LINK*\n\n@' + senderNumber + ' mengirim link!',
                 mentions: [sender],
               });
               return;
@@ -297,18 +432,18 @@ async function startBot() {
       if (isGroup(from) && !isSenderOwner(msg, sender)) {
         const sc = checkSpam(sender);
         if (sc.spam) {
-          try { await sock.sendMessage(from, { delete: msg.key }); } catch {}
+          try { await sock.sendMessage(from, { delete: msg.key }); } catch (e) {}
           if (sc.muted) {
             if (!spamTracker[sender]?.notified || Date.now() - spamTracker[sender].notified > 30000) {
               spamTracker[sender].notified = Date.now();
               await sock.sendMessage(from, {
-                text: `🚫 *ANTI-SPAM*\n\n@${senderNumber} di-mute ${sc.sisa} detik!`,
+                text: '🚫 *ANTI-SPAM*\n\n@' + senderNumber + ' di-mute ' + sc.sisa + ' detik!',
                 mentions: [sender],
               });
             }
           } else {
             await sock.sendMessage(from, {
-              text: `⚠️ *PERINGATAN* (${sc.warned}/${config.warningBeforeMute})\n\n@${senderNumber}, jangan spam!`,
+              text: '⚠️ *PERINGATAN* (' + sc.warned + '/' + config.warningBeforeMute + ')\n\n@' + senderNumber + ', jangan spam!',
               mentions: [sender],
             });
           }
@@ -331,7 +466,103 @@ async function startBot() {
 
       if (!text) return;
 
-      // RANDOM QUESTION (tanpa prefix)
+      // AUTO-JAWAB GAME
+      if (gameState[from] && gameState[from].sender === sender) {
+        const g = gameState[from];
+        const lower = text.trim().toLowerCase();
+
+        // NYERAH
+        if (lower === 'nyerah' || lower === 'menyerah' || lower === 'giveup' || lower === 'skip') {
+          clearGameTimeout(from);
+          let jawabanBenar = '';
+          if (g.game === 'tebakangka') jawabanBenar = g.angka;
+          else if (g.game === 'hangman') jawabanBenar = g.kata;
+          else if (Array.isArray(g.jawab)) jawabanBenar = g.jawab[0];
+          else if (g.jawab) jawabanBenar = g.jawab;
+
+          delete gameState[from];
+          await sock.sendMessage(from, {
+            text: '🏳️ *NYERAH!*\n\nJawaban: *' + jawabanBenar + '*\n\n_Coba lagi kapan-kapan!_',
+          });
+          return;
+        }
+
+        // HANGMAN — 1 huruf
+        if (g.game === 'hangman' && lower.length === 1 && /[a-z]/.test(lower)) {
+          const huruf = lower;
+          if (!g.tebakan.includes(huruf)) {
+            g.tebakan.push(huruf);
+            if (!g.kata.includes(huruf)) g.nyawa--;
+            const tampil = g.kata.split('').map(function(c) {
+              return g.tebakan.includes(c) ? c : '_';
+            }).join(' ');
+            const nyawaBar = '❤️'.repeat(g.nyawa) + '🖤'.repeat(6 - g.nyawa);
+
+            if (g.nyawa <= 0) {
+              clearGameTimeout(from);
+              delete gameState[from];
+              await sock.sendMessage(from, { text: '💀 *GAME OVER!*\nKata: *' + g.kata + '*' });
+              return;
+            }
+            if (!tampil.includes('_')) {
+              clearGameTimeout(from);
+              const u = getUser(sender);
+              updateUser(sender, { money: u.money + 1000, point: u.point + 5 });
+              delete gameState[from];
+              await sock.sendMessage(from, { text: '🎉 *MENANG!*\nKata: *' + g.kata + '*\n\n+Rp 1.000\n+5 Point' });
+              return;
+            }
+            await sock.sendMessage(from, {
+              text: '🎯 *HANGMAN*\n\nKata: ' + tampil + '\nNyawa: ' + nyawaBar + '\nHuruf: ' + g.tebakan.join(', '),
+            });
+            return;
+          }
+        }
+
+        // CEK JAWABAN
+        const accepted = Array.isArray(g.jawab) ? g.jawab : [g.jawab];
+        const isCorrect = accepted.some(function(j) {
+          const cleanJ = String(j).toLowerCase().trim();
+          return lower === cleanJ || lower.includes(cleanJ);
+        });
+
+        if (isCorrect) {
+          clearGameTimeout(from);
+          const u = getUser(sender);
+          const rewards = {
+            tebakangka: [5, 500],
+            quiz: [10, 1000],
+            tebakkata: [3, 750],
+            math: [2, 500],
+            tebakemoji: [3, 800],
+            hangman: [5, 1000],
+            tebakibukota: [3, 700],
+            tebakfilm: [4, 900],
+            tebakpemainbola: [4, 900],
+            tebaklagu: [4, 900],
+            tebakgambar: [3, 800],
+            tebakbendera: [3, 700],
+            tebaksurah: [4, 900],
+            tebakpresiden: [4, 900],
+            tebakplanet: [3, 700],
+            tebakanime: [4, 900],
+            asahotak: [3, 700],
+            siapakahaku: [3, 750],
+            caklontong: [3, 800],
+            lengkapikalimat: [3, 750],
+            family100: [4, 900],
+          };
+          const rw = rewards[g.game] || [3, 500];
+          updateUser(sender, { point: u.point + rw[0], money: u.money + rw[1] });
+          delete gameState[from];
+          await sock.sendMessage(from, {
+            text: '🎉 *BENAR!*\n\n+' + rw[0] + ' Point\n+' + formatMoney(rw[1]),
+          });
+          return;
+        }
+      }
+
+      // RANDOM QUESTION
       if (!text.startsWith(config.prefix)) {
         const lower = text.toLowerCase();
         const rq = [
@@ -341,8 +572,8 @@ async function startBot() {
           { keys: ['ramalan', 'zodiak', 'nasib'], ans: ['🌟 *Hari ini penuh keberuntungan!*', '🌟 *Energi positif mengelilingimu.*'] },
         ];
         for (const q of rq) {
-          if (q.keys.some(k => lower.includes(k))) {
-            await sock.sendMessage(from, { text: random(q.ans) }, { quoted: msg });
+          if (q.keys.some(function(k) { return lower.includes(k); })) {
+            await sock.sendMessage(from, { text: random(q.ans) });
             return;
           }
         }
@@ -353,54 +584,94 @@ async function startBot() {
       const args = text.slice(config.prefix.length).trim().split(/ +/);
       const command = args.shift().toLowerCase();
 
-      // AUTO-DETECT JAWABAN GAME
-      if (gameState[from] && gameState[from].sender === sender) {
-        const g = gameState[from];
-        const lower = text.trim().toLowerCase();
-        const accepted = Array.isArray(g.jawab) ? g.jawab : [g.jawab];
-        const isCorrect = accepted.some(j => String(j).toLowerCase() === lower || lower.includes(String(j).toLowerCase()));
-
-        if (isCorrect) {
-          clearGameTimeout(from);
-          const u = getUser(sender);
-          const rewards = { tebakangka: [5, 500], quiz: [10, 1000], tebakkata: [3, 750], math: [2, 500], tebakemoji: [3, 800] };
-          const [pt, mn] = rewards[g.game] || [3, 500];
-          updateUser(sender, { point: u.point + pt, money: u.money + mn });
-          delete gameState[from];
-          await sock.sendMessage(from, { text: `🎉 *BENAR!*\n\n+${pt} Point\n+${formatMoney(mn)}` }, { quoted: msg });
-          return;
-        }
-      }
-
       // LEVEL SYSTEM
       if (config.levelSystem?.enabled && isGroup(from)) {
         const res = level.addExp(sender);
         if (res) {
           const r = res.reward || {};
           let txt = '';
-          if (r.money) txt += `💰 +${formatMoney(r.money)}\n`;
-          if (r.point) txt += `⭐ +${r.point} Point\n`;
-          if (r.limit) txt += `🎫 +${r.limit} Limit\n`;
+          if (r.money) txt += '💰 +' + formatMoney(r.money) + '\n';
+          if (r.point) txt += '⭐ +' + r.point + ' Point\n';
+          if (r.limit) txt += '🎫 +' + r.limit + ' Limit\n';
           await sock.sendMessage(from, {
-            text: `🎉 *LEVEL UP!*\n\nSelamat @${senderNumber}!\n\n📊 Level: *${res.oldLevel}* → *${res.newLevel}*\n\n🎁 Hadiah:\n${txt}`,
+            text: '🎉 *LEVEL UP!*\n\nSelamat @' + senderNumber + '!\n\n📊 Level: *' + res.oldLevel + '* → *' + res.newLevel + '*\n\n🎁 Hadiah:\n' + txt,
             mentions: [sender],
           });
         }
       }
 
-      // LIMIT CHECK
-      const noLimit = ['menu','help','menugame','menugames','menufun','menuhiburan','menuekonomi','menueco','menulevel','menugroup','menuadmin','menuowner','menuown','runtime','uptime','rt','profile','profil','owner','info','botinfo','mode','self','public','limit','point','uang','money','daily','shop','ping','wiki','cuaca','jodoh','sifat','tourl','sticker','stiker','s'];
-
       const user = getUser(sender);
       const ownerUser = isSenderOwner(msg, sender);
+      const userPremium = premiumLib.isPremium(user);
 
-      if (!noLimit.includes(command) && !ownerUser && user.limit <= 0) {
-        return sock.sendMessage(from, {
-          text: `⚠️ *Limit habis!*\n\nTunggu reset besok atau hubungi owner.\n\n👑 ${config.ownerName}\n📞 ${config.ownerNumber}`,
-        }, { quoted: msg });
+      // REGISTRATION GATE
+      if (config.registrationRequired) {
+        const gateAllowed = [
+          'menu', 'help', 'daftar', 'register', 'reg',
+          'owner', 'ownerku', 'own', 'runtime', 'uptime', 'rt',
+          'ping', 'botinfo', 'info', 'tqto', 'thanks', 'credit',
+          'fitur', 'features', 'commands', 'premium', 'prem',
+        ];
+
+        if (!gateAllowed.includes(command) && !user.registered && !ownerUser) {
+          return sock.sendMessage(from, {
+            text: '╔══════════════════════════════════╗\n' +
+              '║   🚫 *REGISTRATION REQUIRED*     ║\n' +
+              '╚══════════════════════════════════╝\n\n' +
+              '⚠️ Kamu *belum terdaftar*!\n\n' +
+              '📝 Daftar dulu:\n\n' +
+              '    *' + config.prefix + 'daftar <namamu>*\n\n' +
+              'Contoh:\n' +
+              '*' + config.prefix + 'daftar Cahyo Store*\n\n' +
+              '━━━━━━━━━━━━━━━━━━━━━━\n\n' +
+              '✅ *Keuntungan daftar:*\n' +
+              '• Akses semua fitur bot\n' +
+              '• Data tersimpan permanen\n' +
+              '• Bisa main game & ekonomi\n\n' +
+              '_' + config.botName + '_',
+          });
+        }
       }
-      if (!noLimit.includes(command) && !ownerUser) {
-        updateUser(sender, { limit: user.limit - 1 });
+
+      // PREMIUM-ONLY CHECK 🅟
+      if (isPremiumCommand(command) && !userPremium && !ownerUser) {
+        return sock.sendMessage(from, {
+          text: '╔══════════════════════════════════╗\n' +
+            '║      🅟 *FITUR PREMIUM*          ║\n' +
+            '╚══════════════════════════════════╝\n\n' +
+            '🔒 Command *' + config.prefix + command + '* hanya untuk *user premium*.\n\n' +
+            '💎 Upgrade ke premium untuk membuka:\n' +
+            '• Semua fitur download (YouTube, TikTok, IG)\n' +
+            '• Limit harian lebih banyak (' + (config.premium?.dailyLimit || 100) + ')\n' +
+            '• Hadiah daily & EXP berlipat\n' +
+            '• Diskon shop ' + (config.premium?.shopDiscount || 20) + '%\n\n' +
+            '📝 Ketik *' + config.prefix + 'premium* untuk info & cara beli.\n\n' +
+            '_' + config.botName + '_',
+        });
+      }
+
+      // LIMIT CHECK 🅛
+      const limitPlugin = plugins.get(command);
+      const limitCategory = limitPlugin ? (limitPlugin.category || '') : '';
+      const limitCost = getLimitCost(command);
+      // Game & Fun 100% GRATIS (tanpa limit) — biar tidak bosen main
+      const isFree = noLimitCommands.includes(command) || limitCost <= 0 ||
+        limitCategory === 'game' || limitCategory === 'fun';
+
+      if (!isFree && !ownerUser && !userPremium && user.limit < limitCost) {
+        return sock.sendMessage(from, {
+          text: '⚠️ *Limit tidak cukup!*\n\n' +
+            '🅛 Command *' + config.prefix + command + '* butuh *' + limitCost + ' limit*.\n' +
+            '💳 Limit kamu: *' + user.limit + '*\n\n' +
+            'Tunggu reset besok, beli premium, atau hubungi owner.\n\n' +
+            '👑 ' + config.ownerName + '\n📞 ' + config.ownerNumber,
+        });
+      }
+
+      if (!isFree && !ownerUser && !userPremium) {
+        updateUser(sender, { limit: user.limit - limitCost, totalCommands: (user.totalCommands || 0) + 1 });
+      } else if (!isFree && (ownerUser || userPremium)) {
+        updateUser(sender, { totalCommands: (user.totalCommands || 0) + 1 });
       }
 
       // CARI PLUGIN
@@ -412,18 +683,18 @@ async function startBot() {
       try {
         await plugin.execute(sock, msg, args, ctx);
       } catch (err) {
-        console.error(`❌ Error plugin "${plugin.name}":`, err.message);
+        console.error('❌ Error plugin "' + plugin.name + '": ' + err.message);
       }
 
     } catch (err) {
-      console.error('❌ Handler error:', err.message);
+      console.error('❌ Handler error: ' + err.message);
     }
   });
 }
 
 // ============ LOAD & START ============
 loadPlugins();
-startBot().catch(err => {
-  console.error('❌ Fatal:', err);
+startBot().catch(function(err) {
+  console.error('❌ Fatal: ' + err);
   process.exit(1);
 });
