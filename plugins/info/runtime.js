@@ -13,43 +13,51 @@ module.exports = {
     const menit = Math.floor((uptime % 3600) / 60);
     const detik = Math.floor(uptime % 60);
 
-    let uptimeStr = '';
-    if (hari > 0) uptimeStr += `${hari} hari `;
-    if (jam > 0) uptimeStr += `${jam} jam `;
-    if (menit > 0) uptimeStr += `${menit} menit `;
-    uptimeStr += `${detik} detik`;
+    let upStr = '';
+    if (hari > 0) upStr += `${hari}h `;
+    if (jam > 0) upStr += `${jam}j `;
+    if (menit > 0) upStr += `${menit}m `;
+    upStr += `${detik}s`;
 
     const totalMem = (os.totalmem() / (1024 ** 3)).toFixed(2);
     const freeMem = (os.freemem() / (1024 ** 3)).toFixed(2);
     const usedMem = (totalMem - freeMem).toFixed(2);
     const memPercent = ((usedMem / totalMem) * 100).toFixed(1);
-    const barLength = 10;
-    const filled = Math.round((memPercent / 100) * barLength);
-    const memBar = '█'.repeat(filled) + '░'.repeat(barLength - filled);
+    const filled = Math.round((memPercent / 100) * 10);
+    const memBar = '█'.repeat(filled) + '░'.repeat(10 - filled);
 
-    const text = `╔══════════════════════════════════╗
-║      ⏱️ *BOT RUNTIME*
-╚══════════════════════════════════╝
+    await sock.sendMessage(from, {
+      text: `╔══════════════════════════════════════╗
+║       ⏱️  *BOT RUNTIME*  ⏱️
+╚══════════════════════════════════════╝
 
-🟢 *Status*  : Online
-⏱️ *Uptime*  : *${uptimeStr}*
+  ◆  🟢  Status  : *Online*
+  ◆  ⏱️  Uptime  : *${upStr}*
 
-💻 *SYSTEM*
-🖥️ OS     : ${os.platform()}
-⚙️ Arch   : ${os.arch()}
-🟢 Node   : ${process.version}
-🔥 CPU    : ${os.cpus().length} cores
+╭─────────────────────────────────────╮
+│  💻  *SYSTEM*                        │
+╰─────────────────────────────────────╯
 
-💾 *MEMORY*
-📦 Total : ${totalMem} GB
-✅ Free  : ${freeMem} GB
-🔥 Used  : ${usedMem} GB
- [${memBar}] ${memPercent}%
+  ◈  🖥️  OS     : ${os.platform()}
+  ◈  ⚙️  Arch   : ${os.arch()}
+  ◈  🟢  Node   : ${process.version}
+  ◈  🔥  CPU    : ${os.cpus().length} cores
 
-🤖 *${config.botName}*
-📞 ${config.botNumber}
-👑 ${config.ownerName}`;
+╭─────────────────────────────────────╮
+│  💾  *MEMORY*                        │
+╰─────────────────────────────────────╯
 
-    await sock.sendMessage(from, { text });
+  ◈  📦  Total : ${totalMem} GB
+  ◈  ✅  Free  : ${freeMem} GB
+  ◈  🔥  Used  : ${usedMem} GB
+
+  [${memBar}] ${memPercent}%
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  🤖  ${config.botName}
+  📞  ${config.botNumber}
+  👑  ${config.ownerName}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`,
+    });
   },
 };
