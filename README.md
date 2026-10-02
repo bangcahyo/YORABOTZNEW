@@ -11,7 +11,7 @@
 [![Baileys](https://img.shields.io/badge/baileys-6.7.24-purple?style=flat-square)](https://github.com/WhiskeySockets/Baileys)
 [![License](https://img.shields.io/badge/license-MIT-yellow?style=flat-square)](LICENSE)
 
-[🌐 Website](https://fityorastore.netlify.app/) • [💬 Grup](https://chat.whatsapp.com/GRj7DL7U8w44CTmGcFC5v2) • [📞 Owner](https://wa.me/628139525985)
+[🌐 Website](https://fityorastore.netlify.app/) • [💬 Grup](https://chat.whatsapp.com/K97NhtfCxoV90vJ2ub419I?s=cl&p=a&mlu=4&ilr=4) • [📞 Owner](https://wa.me/628139525985)
 
 </div>
 
