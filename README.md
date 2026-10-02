@@ -6,7 +6,7 @@
 
 **Bot WhatsApp Multi-Fitur dengan Pairing Code — Tanpa QR**
 
-[![Version](https://img.shields.io/badge/v7.2.0-blue?style=flat-square)](https://github.com/bangcahyo/YoraBotz)
+[![Version](https://img.shields.io/badge/v7.2.1-blue?style=flat-square)](https://github.com/bangcahyo/YoraBotz)
 [![Node](https://img.shields.io/badge/node-%3E%3D20-green?style=flat-square)](https://nodejs.org/)
 [![Baileys](https://img.shields.io/badge/baileys-6.7.24-purple?style=flat-square)](https://github.com/WhiskeySockets/Baileys)
 [![License](https://img.shields.io/badge/license-MIT-yellow?style=flat-square)](LICENSE)
@@ -91,7 +91,7 @@ Fitur yang memakai limit ditandai dengan **🅛**. Setiap command punya biaya be
 
 ---
 
-## 🆕 Changelog v7.2.0
+## 🆕 Changelog v7.2.1
 
 ### ✨ Fitur Baru Tambahan
 - **Utility baru**: `.jam`, `.statusbot`, `.acakangka`, `.bmi`, `.reminder`, `.translate`, `.cekpasangan`
@@ -573,7 +573,7 @@ rm -rf session
 
 ```
 ╔══════════════════════════════════╗
-║   📦 YORA BOTZ v7.2.0            ║
+║   📦 YORA BOTZ v7.2.1            ║
 ╚══════════════════════════════════╝
   📁 Menu       : 8 plugin
   📁 Game       : 40 plugin
