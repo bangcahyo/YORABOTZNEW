@@ -163,6 +163,31 @@ function loadPlugins() {
   console.log('  📊 Total    : ' + pluginList.length + ' plugin\n');
 }
 
+function levenshteinDistance(a, b) {
+  const dp = Array.from({ length: a.length + 1 }, () => Array(b.length + 1).fill(0));
+  for (let i = 0; i <= a.length; i++) dp[i][0] = i;
+  for (let j = 0; j <= b.length; j++) dp[0][j] = j;
+  for (let i = 1; i <= a.length; i++) {
+    for (let j = 1; j <= b.length; j++) {
+      const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+      dp[i][j] = Math.min(
+        dp[i - 1][j] + 1,
+        dp[i][j - 1] + 1,
+        dp[i - 1][j - 1] + cost,
+      );
+    }
+  }
+  return dp[a.length][b.length];
+}
+
+function findClosestCommand(input) {
+  const keys = [...plugins.keys()];
+  if (!keys.length) return [];
+  const scored = keys.map((key) => ({ key, score: levenshteinDistance(input, key) })).filter((item) => item.score <= 3 || item.key.startsWith(input.slice(0, 2)));
+  scored.sort((a, b) => a.score - b.score);
+  return scored.slice(0, 3).map((item) => item.key);
+}
+
 // ============ BUILD CONTEXT ============
 function buildContext(sock, msg, args) {
   const from = msg.key.remoteJid;
@@ -677,12 +702,15 @@ async function startBot() {
       // CARI PLUGIN
       const plugin = plugins.get(command);
       if (!plugin) {
+        const suggestions = findClosestCommand(command);
+        const suggestionLine = suggestions.length ? '\nMungkin yang kamu maksud:\n' + suggestions.map((s) => '• *' + config.prefix + s + '*').join('\n') + '\n\n' : '';
         const helpText = '❓ *Command tidak dikenal*\n\n' +
           'Coba salah satu dari opsi berikut:\n\n' +
           '• *' + config.prefix + 'menu* — menu utama\n' +
           '• *' + config.prefix + 'tutorial* — panduan cepat\n' +
           '• *' + config.prefix + 'commands* — daftar semua command\n' +
           '• *' + config.prefix + 'premium* — info premium\n\n' +
+          suggestionLine +
           'Jika butuh bantuan, kirim *' + config.prefix + 'help* atau hubungi owner.';
         await sock.sendMessage(from, { text: helpText }, { quoted: msg });
         return;
