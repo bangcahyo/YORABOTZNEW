@@ -106,6 +106,19 @@ module.exports = {
   ◈  🏓  ${config.prefix}ping
 
 ╭─────────────────────────────────────╮
+│  🚀  *QUICK START / ONBOARDING*     │
+╰─────────────────────────────────────╯
+
+  1. 📝 ${config.prefix}daftar        → Daftar akun
+  2. 👤 ${config.prefix}profile       → Cek profil & status
+  3. 🎁 ${config.prefix}daily          → Ambil reward harian
+  4. 📊 ${config.prefix}menu          → Lihat menu utama
+  5. 💎 ${config.prefix}premium buy   → Upgrade ke premium
+  6. 📈 ${config.prefix}limit          → Cek limit / benefit
+  7. 🛠️ ${config.prefix}menutools      → Utility & tools
+  8. 🆘 ${config.prefix}help           → Panduan cepat
+
+╭─────────────────────────────────────╮
 │  ℹ️  *INFO BOT*                      │
 ╰─────────────────────────────────────╯
 
@@ -124,7 +137,7 @@ module.exports = {
 ${tqtoText}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  ⚡  _${config.botName} v7.1 — _wa.me/fityora_
+  ⚡  _${config.botName} v7.2.1 — _wa.me/fityora_
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`;
 
     const mode = config.sendMenuAs || 'both';
