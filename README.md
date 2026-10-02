@@ -97,7 +97,14 @@ Fitur yang memakai limit ditandai dengan **🅛**. Setiap command punya biaya be
 - **Utility baru**: `.jam`, `.statusbot`, `.acakangka`, `.bmi`, `.reminder`, `.translate`, `.cekpasangan`
 - **Menu tools diperbarui** agar fitur baru mudah diakses dari daftar command.
 - **Semua plugin baru otomatis terdaftar** saat bot mulai, tanpa perlu edit manual di loader.
-- **Total valid plugin saat ini**: **148 fitur aktif** dan semua sudah bisa dipanggil lewat command.
+
+### 🧭 UX & Operasional Bot
+- **Saran command otomatis**: jika command tidak dikenal, bot memberi hingga tiga saran command yang paling mirip.
+- **Panduan pengguna**: `.tutorial` dan `.commands` membantu user mengenal fitur serta command yang tersedia.
+- **Bantuan grup**: `.grouphelp` merangkum command administrasi grup.
+- **Pemantauan bot**: `.statusbot` menampilkan kondisi runtime; `.systemaudit` merangkum versi, plugin, data, uptime, dan penggunaan RAM untuk owner.
+- **Kontrol owner**: `.security` untuk ringkasan keamanan, `.accessmode self/public` untuk mode akses, dan `.whitelist` untuk mengelola grup yang diizinkan.
+- **Restart terjadwal**: `.restartsafe <detik> <alasan>` memberi pemberitahuan sebelum proses restart.
 
 ### 🔑 Tanpa API Key
 - **Semua penggunaan API key Autoresbot dihapus** dari `config.js` dan `lib/downloader.js`. Bot tidak butuh key apa pun.
@@ -315,6 +322,11 @@ _Semua downloader berjalan **tanpa API key**. Opsional: pasang `yt-dlp` di serve
 ```
 .ping         → Test latency bot
 .runtime      → Info uptime & server
+.statusbot    → Status runtime bot
+.tutorial     → Panduan penggunaan
+.commands     → Daftar command
+.about        → Info bot
+.version      → Cek versi bot
 .owner        → Kontak owner
 .tqto         → Thanks to
 ```
@@ -414,6 +426,7 @@ _Semua downloader berjalan **tanpa API key**. Opsional: pasang `yt-dlp` di serve
 .demote @user       → Cabut admin
 .tagall <teks>      → Tag semua member
 .groupinfo          → Info grup
+.grouphelp          → Bantuan command admin grup
 ```
 
 ### 👑 Owner Only
@@ -421,6 +434,12 @@ _Semua downloader berjalan **tanpa API key**. Opsional: pasang `yt-dlp` di serve
 .self               → Mode self
 .public             → Mode public
 .mode               → Cek mode bot
+.accessmode self    → Batasi akses hanya untuk owner
+.accessmode public  → Buka akses untuk semua user
+.whitelist          → Lihat bantuan whitelist grup
+.security           → Ringkasan keamanan bot
+.systemaudit        → Audit sistem bot
+.restartsafe 5 maintenance → Restart aman setelah 5 detik
 .addmoney @u <jml>  → Tambah uang
 .addlimit @u <jml>  → Tambah limit
 .addpoint @u <jml>  → Tambah point
