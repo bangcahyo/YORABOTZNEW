@@ -676,7 +676,17 @@ async function startBot() {
 
       // CARI PLUGIN
       const plugin = plugins.get(command);
-      if (!plugin) return;
+      if (!plugin) {
+        const helpText = '❓ *Command tidak dikenal*\n\n' +
+          'Coba salah satu dari opsi berikut:\n\n' +
+          '• *' + config.prefix + 'menu* — menu utama\n' +
+          '• *' + config.prefix + 'tutorial* — panduan cepat\n' +
+          '• *' + config.prefix + 'commands* — daftar semua command\n' +
+          '• *' + config.prefix + 'premium* — info premium\n\n' +
+          'Jika butuh bantuan, kirim *' + config.prefix + 'help* atau hubungi owner.';
+        await sock.sendMessage(from, { text: helpText }, { quoted: msg });
+        return;
+      }
 
       // EXECUTE
       const ctx = buildContext(sock, msg, args);
