@@ -145,6 +145,17 @@ module.exports = {
   },
 
   // ═══════════════════════════════════════════════════════
+  //                    OWNER ALERTS
+  // ═══════════════════════════════════════════════════════
+  ownerAlerts: {
+    enabled: true,
+    onModeChange: true,
+    onWhitelistChange: true,
+    onUnknownCommand: true,
+    onSecurityEvent: true,
+  },
+
+  // ═══════════════════════════════════════════════════════
   //                    TQTO
   // ═══════════════════════════════════════════════════════
   tqto: {

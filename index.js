@@ -189,6 +189,19 @@ function findClosestCommand(input) {
 }
 
 // ============ BUILD CONTEXT ============
+function notifyOwner(sock, text) {
+  try {
+    if (config.ownerAlerts?.enabled === false) return false;
+    const ownerJid = (config.ownerNumber || '').replace(/[^0-9]/g, '') + '@s.whatsapp.net';
+    if (!ownerJid || ownerJid === '@s.whatsapp.net') return false;
+    sock.sendMessage(ownerJid, { text: text });
+    return true;
+  } catch (err) {
+    console.error('❌ notifyOwner error: ' + err.message);
+    return false;
+  }
+}
+
 function buildContext(sock, msg, args) {
   const from = msg.key.remoteJid;
   const sender = msg.key.participantAlt || msg.key.participant || msg.key.remoteJidAlt || msg.key.remoteJid;
@@ -218,6 +231,9 @@ function buildContext(sock, msg, args) {
     loadActivityLog: database.loadActivityLog,
     pushActivity: database.pushActivity,
     clearActivityLog: database.clearActivityLog,
+    notifyOwner: function(text) {
+      return notifyOwner(sock, text);
+    },
     loadGroups: loadGroups,
     saveGroups: saveGroups,
     getGroupSettings: getGroupSettings,
@@ -727,6 +743,12 @@ async function startBot() {
             text: text || command,
             success: false,
           });
+          if (config.ownerAlerts?.enabled !== false && config.ownerAlerts?.onUnknownCommand !== false) {
+            notifyOwner(sock, '⚠️ Command tidak dikenal diterima\n' +
+              'Command: *' + command + '*\n' +
+              'Pengguna: *' + senderNumber + '*\n' +
+              'Grup/Chat: *' + from + '*');
+          }
         } catch (err) {
           console.error('❌ Gagal menyimpan log command tidak dikenal: ' + err.message);
         }

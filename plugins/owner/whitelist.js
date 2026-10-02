@@ -18,11 +18,19 @@ module.exports = {
 
     if (sub === 'on') {
       wl.enabled = true;
+      config.whitelistGroup = wl;
+      if (config.ownerAlerts?.enabled !== false && config.ownerAlerts?.onWhitelistChange !== false && ctx.notifyOwner) {
+        ctx.notifyOwner('🔒 *WHITELIST DIAKTIFKAN*\n\nOwner: *' + (msg.key?.participant || msg.key?.remoteJid || 'unknown') + '*\nBot hanya akan aktif di grup yang masuk daftar.');
+      }
       return sock.sendMessage(from, { text: '✅ *Whitelist grup diaktifkan.*\n\nBot hanya akan berfungsi pada grup yang masuk daftar.' }, { quoted: msg });
     }
 
     if (sub === 'off') {
       wl.enabled = false;
+      config.whitelistGroup = wl;
+      if (config.ownerAlerts?.enabled !== false && config.ownerAlerts?.onWhitelistChange !== false && ctx.notifyOwner) {
+        ctx.notifyOwner('🔓 *WHITELIST DIMATIKAN*\n\nOwner: *' + (msg.key?.participant || msg.key?.remoteJid || 'unknown') + '*\nBot kembali aktif di semua grup.');
+      }
       return sock.sendMessage(from, { text: '❌ *Whitelist grup dimatikan.*\n\nBot kembali aktif di semua grup.' }, { quoted: msg });
     }
 
@@ -31,6 +39,10 @@ module.exports = {
         return sock.sendMessage(from, { text: `Format: *${config.prefix}whitelist add <groupjid>*\n\nContoh: *${config.prefix}whitelist add 120363xxxxx@g.us*` }, { quoted: msg });
       }
       if (!wl.groups.includes(groupJid)) wl.groups.push(groupJid);
+      config.whitelistGroup = wl;
+      if (config.ownerAlerts?.enabled !== false && config.ownerAlerts?.onWhitelistChange !== false && ctx.notifyOwner) {
+        ctx.notifyOwner('🟢 *GRUP DITAMBAH KE WHITELIST*\n\nGroup: *' + groupJid + '*\nOwner: *' + (msg.key?.participant || msg.key?.remoteJid || 'unknown') + '*');
+      }
       return sock.sendMessage(from, { text: `✅ Grup ditambahkan ke whitelist:\n${groupJid}` }, { quoted: msg });
     }
 
@@ -39,6 +51,10 @@ module.exports = {
         return sock.sendMessage(from, { text: `Format: *${config.prefix}whitelist del <groupjid>*\n\nContoh: *${config.prefix}whitelist del 120363xxxxx@g.us*` }, { quoted: msg });
       }
       wl.groups = wl.groups.filter(g => g !== groupJid);
+      config.whitelistGroup = wl;
+      if (config.ownerAlerts?.enabled !== false && config.ownerAlerts?.onWhitelistChange !== false && ctx.notifyOwner) {
+        ctx.notifyOwner('🟡 *GRUP DIHAPUS DARI WHITELIST*\n\nGroup: *' + groupJid + '*\nOwner: *' + (msg.key?.participant || msg.key?.remoteJid || 'unknown') + '*');
+      }
       return sock.sendMessage(from, { text: `🗑️ Grup dihapus dari whitelist:\n${groupJid}` }, { quoted: msg });
     }
 
