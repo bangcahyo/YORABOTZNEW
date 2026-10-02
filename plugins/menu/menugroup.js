@@ -20,6 +20,7 @@ module.exports = {
   ◈  🔗  ${config.prefix}antilink on/off
   ◈  🛡️  ${config.prefix}antispam on/off
   ◈  🔊  ${config.prefix}unmute @user
+  ◈  📘  ${config.prefix}grouphelp
 
 ╭─────────────────────────────────────╮
 │  👋  *WELCOME & GOODBYE*             │
