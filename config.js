@@ -18,6 +18,15 @@ module.exports = {
   defaultLimit: 20,
   defaultMoney: 1000,
   defaultPoint: 0,
+  dailyStreak: {
+    graceHours: 48,
+    milestones: {
+      3: { money: 500, limit: 5 },
+      7: { money: 1500, limit: 10 },
+      14: { money: 3000, limit: 20 },
+      30: { money: 7500, limit: 50 },
+    },
+  },
 
   // ═══════════════════════════════════════════════════════════════
   //                    PREMIUM  🅟
@@ -38,6 +47,8 @@ module.exports = {
     'tourl', 'emojimix',
     'youtube', 'ytmp4', 'ytmp3', 'tiktok', 'instagram', 'ig',
     'ai', 'ask', 'assistant', 'askbot',
+    'briefing', 'dailybrief', 'ringkasan',
+    'premiumcard', 'profilecard', 'vipcard',
   ],
 
   // ═══════════════════════════════════════════════════════════════

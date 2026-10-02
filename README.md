@@ -55,12 +55,16 @@ Fitur premium ditandai dengan **🅟**. User premium mendapatkan keuntungan:
 | Diskon shop | — | **20%** |
 | Fitur downloader | ❌ | ✅ |
 | Bebas limit | ❌ | ✅ (bypass limit) |
+| Daily briefing personal | ❌ | ✅ |
+| Kartu profil premium | ❌ | ✅ |
 
 **Cara jadi premium:**
 ```
 .premium            → Lihat info & benefit premium
 .premium cek        → Cek status premium kamu
 .premium buy        → Beli premium (bayar pakai uang)
+.briefing           → Ringkasan progres, ekonomi, daily, dan status premium
+.premiumcard        → Kartu profil premium dalam bentuk gambar
 ```
 
 **Owner bisa kelola premium:**
@@ -406,7 +410,7 @@ Fitur premium ini membantu user cepat mendapatkan info bot, fitur, cara daftar, 
 .limit info         → Daftar fitur berlimit  🅛
 .point              → Cek point
 .uang               → Cek uang
-.daily              → Klaim hadiah harian
+.daily              → Klaim hadiah harian + streak (jaga klaim dalam 48 jam)
 .transfer @user     → Transfer uang
 .shop               → Lihat toko
 .buy <item>         → Beli item

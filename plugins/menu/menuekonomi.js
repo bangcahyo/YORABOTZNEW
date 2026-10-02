@@ -25,6 +25,8 @@ module.exports = {
 │  🅟  *PREMIUM*                       │
 ╰─────────────────────────────────────╯
 
+  ◈  🪪  ${config.prefix}premiumcard
+  ◈  ✨  ${config.prefix}briefing
   ◈  🅟  ${config.prefix}premium
   ◈  💎  ${config.prefix}premium buy
   ◈  🔍  ${config.prefix}premium cek
@@ -41,7 +43,7 @@ module.exports = {
 │  🎁  *REWARD*                        │
 ╰─────────────────────────────────────╯
 
-  ◈  🎁  ${config.prefix}daily
+  ◈  🎁  ${config.prefix}daily (streak & milestone)
   ◈  💸  ${config.prefix}transfer @user <jml>
 
 ╭─────────────────────────────────────╮

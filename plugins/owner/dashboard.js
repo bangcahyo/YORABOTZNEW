@@ -33,6 +33,8 @@ module.exports = {
     const groups = ctx.loadGroups ? ctx.loadGroups() : {};
     const stats = ctx.loadCommandStats ? ctx.loadCommandStats() : {};
     const logs = ctx.loadActivityLog ? ctx.loadActivityLog() : [];
+    const recentLogs = Array.isArray(logs) ? logs : [];
+    const premiumUsers = ctx.listPremium ? ctx.listPremium() : [];
     const totalCommands = Object.values(stats).reduce((sum, value) => sum + (Number(value?.count) || 0), 0);
     const topEntry = Object.entries(stats)
       .filter(([, value]) => Number(value?.count) > 0)
@@ -40,9 +42,20 @@ module.exports = {
 
     const topCommand = topEntry ? `${topEntry[0]} (${topEntry[1].count})` : 'Belum ada';
     const uptime = process.uptime();
-    const hours = Math.floor(uptime / 3600);
+    const days = Math.floor(uptime / 86400);
+    const hours = Math.floor((uptime % 86400) / 3600);
     const minutes = Math.floor((uptime % 3600) / 60);
     const mem = process.memoryUsage();
+    const failedLogs = recentLogs.filter((entry) => entry?.success === false).length;
+    const latestActivity = recentLogs[0]?.timestamp
+      ? new Date(recentLogs[0].timestamp).toLocaleString('id-ID', {
+        day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit',
+      })
+      : 'Belum ada';
+    const uptimeText = `${days ? `${days} hari ` : ''}${hours}j ${minutes}m`;
+    const healthText = failedLogs
+      ? `⚠️ ${failedLogs} aktivitas gagal pada log tersimpan`
+      : '✅ Tidak ada aktivitas gagal pada log tersimpan';
 
     const text = `╔══════════════════════════════════════╗
 ║      👑 *BOT DASHBOARD*  👑
@@ -52,14 +65,17 @@ module.exports = {
 🤖 Bot Name        : *${config.botName}*
 🔐 Prefix          : *${config.prefix}*
 📡 Mode            : *${(config.botMode || 'public').toUpperCase()}*
-⏱️ Uptime          : *${hours}h ${minutes}m*
-🧩 Plugin Count    : *${countPlugins()}*
+⏱️ Uptime          : *${uptimeText}*
+🧩 Plugin Files    : *${countPlugins()}*
 👥 User Data       : *${Object.keys(db).length}*
 👥 Group Data      : *${Object.keys(groups).length}*
+💎 Premium Aktif   : *${Array.isArray(premiumUsers) ? premiumUsers.length : 0}*
 📊 Total Command   : *${totalCommands}*
 🏆 Top Command     : *${topCommand}*
-📜 Recent Logs     : *${Array.isArray(logs) ? logs.length : 0}*
-🧠 RAM Used        : *${(mem.heapUsed / 1024 / 1024).toFixed(1)} MB*
+📜 Log Tersimpan   : *${recentLogs.length}* (maks. 200)
+🕒 Aktivitas Baru  : *${latestActivity}*
+🧠 Heap            : *${(mem.heapUsed / 1024 / 1024).toFixed(1)} / ${(mem.heapTotal / 1024 / 1024).toFixed(1)} MB*
+💾 RSS             : *${(mem.rss / 1024 / 1024).toFixed(1)} MB*
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ⚡ *Owner shortcuts:*
@@ -70,7 +86,7 @@ module.exports = {
 • ${config.prefix}restartsafe 5 maintenance
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-✅ Status: *bot berjalan dengan performa stabil*`;
+${healthText}`;
 
     await sock.sendMessage(from, { text }, { quoted: msg });
   },
