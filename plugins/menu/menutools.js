@@ -19,6 +19,15 @@ ${config.prefix}tourl (reply media)
 📖 *INFO*
 ${config.prefix}wiki <topik>
 ${config.prefix}cuaca <kota>
+${config.prefix}jam
+${config.prefix}statusbot
+
+⚙️ *UTILITY*
+${config.prefix}bmi <berat> <tinggi>
+${config.prefix}acakangka <min> <max>
+${config.prefix}reminder <5m> <teks>
+${config.prefix}translate <kata>
+${config.prefix}cekpasangan <nama1> + <nama2>
 
 🔮 *RAMALAN*
 ${config.prefix}jodoh @user

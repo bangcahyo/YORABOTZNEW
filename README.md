@@ -6,8 +6,8 @@
 
 **Bot WhatsApp Multi-Fitur dengan Pairing Code — Tanpa QR**
 
-[![Version](https://img.shields.io/badge/v7.1.1-blue?style=flat-square)](https://github.com/bangcahyo/YoraBotz)
-[![Node](https://img.shields.io/badge/node-%3E%3D18-green?style=flat-square)](https://nodejs.org/)
+[![Version](https://img.shields.io/badge/v7.2.0-blue?style=flat-square)](https://github.com/bangcahyo/YoraBotz)
+[![Node](https://img.shields.io/badge/node-%3E%3D20-green?style=flat-square)](https://nodejs.org/)
 [![Baileys](https://img.shields.io/badge/baileys-6.7.24-purple?style=flat-square)](https://github.com/WhiskeySockets/Baileys)
 [![License](https://img.shields.io/badge/license-MIT-yellow?style=flat-square)](LICENSE)
 
@@ -31,6 +31,7 @@
 | 🌤️ **Cuaca** | Info cuaca real-time |
 | 🎮 **40 Game** | Slot, dadu, tebak-tebakan, family100, dll |
 | 🎲 **19 Menu Fun** | Quote, pantun, puisi, gombalan, zodiak, dll |
+| 🧰 **Utility Tools** | Jam, BMI, reminder, translate, cekpasangan, acak angka, status bot |
 | 💰 **Ekonomi** | Limit, uang, point, daily, shop, premium |
 | 📊 **Level System** | Naik level dari aktivitas chat |
 | 🛡️ **Group Admin** | Anti-link, anti-spam, welcome |
@@ -40,7 +41,7 @@
 
 ## 🅟🅛 Sistem Premium & Limit
 
-Yora Botz v7.1 memperkenalkan **dua sistem ekonomi baru** yang membuat bot lebih seimbang dan menguntungkan.
+Yora Botz v7.2 menghadirkan **peningkatan pengalaman premium** dengan sistem yang lebih rapih, lebih stabil, dan lebih nyaman untuk penggunaan harian.
 
 ### 🅟 Premium
 
@@ -90,7 +91,13 @@ Fitur yang memakai limit ditandai dengan **🅛**. Setiap command punya biaya be
 
 ---
 
-## 🆕 Changelog v7.1.1
+## 🆕 Changelog v7.2.0
+
+### ✨ Fitur Baru Tambahan
+- **Utility baru**: `.jam`, `.statusbot`, `.acakangka`, `.bmi`, `.reminder`, `.translate`, `.cekpasangan`
+- **Menu tools diperbarui** agar fitur baru mudah diakses dari daftar command.
+- **Semua plugin baru otomatis terdaftar** saat bot mulai, tanpa perlu edit manual di loader.
+- **Total valid plugin saat ini**: **148 fitur aktif** dan semua sudah bisa dipanggil lewat command.
 
 ### 🔑 Tanpa API Key
 - **Semua penggunaan API key Autoresbot dihapus** dari `config.js` dan `lib/downloader.js`. Bot tidak butuh key apa pun.
@@ -566,22 +573,22 @@ rm -rf session
 
 ```
 ╔══════════════════════════════════╗
-║   📦 YORA BOTZ v7.1.1            ║
+║   📦 YORA BOTZ v7.2.0            ║
 ╚══════════════════════════════════╝
   📁 Menu       : 8 plugin
   📁 Game       : 40 plugin
   📁 Ekonomi    : 10 plugin
   📁 Level      : 5 plugin
   📁 Group      : 12 plugin
-  📁 Tools      : 5 plugin
+  📁 Tools      : 12 plugin
   📁 Download   : 4 plugin
   📁 Fun        : 19 plugin
   📁 Info       : 6 plugin
   📁 Sticker    : 3 plugin
   📁 Owner      : 29 plugin
   ───────────────────────────────
-  📊 Total      : 141 plugin
-  🚀 Fitur      : 240+ command
+  📊 Total      : 148 plugin
+  🚀 Fitur      : 148 command valid
   🅟 Premium    : aktif
   🅛 Limit      : aktif
 ```

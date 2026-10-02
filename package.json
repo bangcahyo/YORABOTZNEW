@@ -1,7 +1,7 @@
 {
   "name": "yora-botz",
-  "version": "7.1.1",
-  "description": "Yora Botz - Multi-Fitur WhatsApp Bot",
+  "version": "7.2.0",
+  "description": "Yora Botz - Premium WhatsApp Bot Multi-Fitur",
   "main": "index.js",
   "scripts": {
     "start": "node index.js"
