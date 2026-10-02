@@ -439,6 +439,8 @@ _Semua downloader berjalan **tanpa API key**. Opsional: pasang `yt-dlp` di serve
 .whitelist          → Lihat bantuan whitelist grup
 .security           → Ringkasan keamanan bot
 .systemaudit        → Audit sistem bot
+.commandstats       → Statistik pemakaian command (top 10)
+.commandstats reset → Reset statistik command
 .restartsafe 5 maintenance → Restart aman setelah 5 detik
 .addmoney @u <jml>  → Tambah uang
 .addlimit @u <jml>  → Tambah limit

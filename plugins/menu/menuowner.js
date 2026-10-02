@@ -90,6 +90,7 @@ module.exports = {
   ◈  🛡️  ${config.prefix}restartsafe <detik> <alasan>
   ◈  🔒  ${config.prefix}whitelist <on/off/add/del/list>
   ◈  🧪  ${config.prefix}systemaudit
+  ◈  📊  ${config.prefix}commandstats
   ◈  ⏱️  ${config.prefix}runtime
   ◈  🏓  ${config.prefix}ping
 

@@ -213,6 +213,8 @@ function buildContext(sock, msg, args) {
     updateUser: updateUser,
     loadDB: loadDB,
     saveDB: saveDB,
+    loadCommandStats: database.loadCommandStats,
+    resetCommandStats: database.resetCommandStats,
     loadGroups: loadGroups,
     saveGroups: saveGroups,
     getGroupSettings: getGroupSettings,
@@ -720,6 +722,13 @@ async function startBot() {
       const ctx = buildContext(sock, msg, args);
       try {
         await plugin.execute(sock, msg, args, ctx);
+        if (plugin.name !== 'commandstats') {
+          try {
+            database.recordCommandUsage(plugin.name);
+          } catch (err) {
+            console.error('❌ Gagal menyimpan statistik command: ' + err.message);
+          }
+        }
       } catch (err) {
         console.error('❌ Error plugin "' + plugin.name + '": ' + err.message);
       }
