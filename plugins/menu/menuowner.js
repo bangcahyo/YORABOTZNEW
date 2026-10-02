@@ -60,6 +60,7 @@ module.exports = {
   ◈  🏠  ${config.prefix}self
   ◈  🌐  ${config.prefix}public
   ◈  ℹ️  ${config.prefix}mode
+  ◈  🔐  ${config.prefix}security
 
 ╭─────────────────────────────────────╮
 │  ⚙️  *EDIT CONFIG*                   │
