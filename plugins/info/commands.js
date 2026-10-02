@@ -70,6 +70,7 @@ module.exports = {
   • ${prefix}menuowner
   • ${prefix}commandstats
   • ${prefix}activitylog
+  • ${prefix}dashboard
   • ${prefix}broadcast
   • ${prefix}backup
   • ${prefix}reloadcfg

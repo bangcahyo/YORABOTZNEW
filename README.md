@@ -443,6 +443,7 @@ _Semua downloader berjalan **tanpa API key**. Opsional: pasang `yt-dlp` di serve
 .commandstats reset → Reset statistik command
 .activitylog        → Log aktivitas bot (10 terakhir)
 .activitylog clear   → Reset log aktivitas
+.dashboard          → Ringkasan performa bot & owner panel
 .restartsafe 5 maintenance → Restart aman setelah 5 detik
 .addmoney @u <jml>  → Tambah uang
 .addlimit @u <jml>  → Tambah limit

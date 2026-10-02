@@ -92,6 +92,7 @@ module.exports = {
   ◈  🧪  ${config.prefix}systemaudit
   ◈  📊  ${config.prefix}commandstats
   ◈  📜  ${config.prefix}activitylog
+  ◈  👑  ${config.prefix}dashboard
   ◈  ⏱️  ${config.prefix}runtime
   ◈  🏓  ${config.prefix}ping
 
