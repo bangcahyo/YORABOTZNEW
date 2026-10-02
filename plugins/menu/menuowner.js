@@ -59,6 +59,7 @@ module.exports = {
 
   ◈  🏠  ${config.prefix}self
   ◈  🌐  ${config.prefix}public
+  ◈  🔐  ${config.prefix}accessmode <self/public>
   ◈  ℹ️  ${config.prefix}mode
   ◈  🔐  ${config.prefix}security
 
