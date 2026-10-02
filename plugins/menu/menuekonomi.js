@@ -28,10 +28,14 @@ module.exports = {
   ◈  🅟  ${config.prefix}premium
   ◈  💎  ${config.prefix}premium buy
   ◈  🔍  ${config.prefix}premium cek
+  ◈  🚀  ${config.prefix}premium info
 
   💵 Harga  : *${formatMoney(P.price || 50000)}*
   ⏳ Durasi : *${P.durationDays || 30} hari*
   🅛 Limit  : *${P.dailyLimit || 100}* (free: ${config.defaultLimit})
+  💰 Bonus  : *${P.dailyMoneyMultiplier || 2}x* uang & *${P.expMultiplier || 2}x* EXP
+
+  ➤ Upgrade sekarang untuk fitur lebih lengkap dan limit lebih besar.
 
 ╭─────────────────────────────────────╮
 │  🎁  *REWARD*                        │

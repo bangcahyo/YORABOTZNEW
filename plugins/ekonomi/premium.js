@@ -1,7 +1,7 @@
 module.exports = {
   name: 'premium',
   category: 'ekonomi',
-  aliases: ['prem', 'buypremium', 'belipremium', 'cekpremium'],
+  aliases: ['prem', 'buypremium', 'belipremium', 'cekpremium', 'premiuminfo'],
   async execute(sock, msg, args, ctx) {
     const { config, from, sender, user, updateUser, formatMoney, isPremium, premiumRemainingDays, addPremium } = ctx;
     const P = config.premium || {};
@@ -58,16 +58,15 @@ module.exports = {
     // ===== INFO PREMIUM (default) =====
     const aktif = isPremium();
     let txt = '╔══════════════════════════════════╗\n';
-    txt += '║       🅟 *PREMIUM MEMBER*        ║\n';
+    txt += '║        🅟 *PREMIUM MEMBER*       ║\n';
     txt += '╚══════════════════════════════════╝\n\n';
-    txt += '💎 *Keuntungan Premium:*\n\n';
-    txt += '  🅟 Buka semua fitur download\n';
-    txt += '     (YouTube, TikTok, Instagram)\n';
-    txt += '  🅛 Limit harian *' + (P.dailyLimit || 100) + '* (free: ' + config.defaultLimit + ')\n';
-    txt += '  💰 Hadiah daily *' + (P.dailyMoneyMultiplier || 2) + 'x* lipat\n';
-    txt += '  ⭐ EXP per pesan *' + (P.expMultiplier || 2) + 'x* lipat\n';
-    txt += '  🛒 Diskon shop *' + (P.shopDiscount || 20) + '%*\n';
-    txt += '  🚀 Bebas limit hingga *' + (P.maxLimit || 9999) + '*\n\n';
+    txt += '💎 *Kenapa upgrade premium?*\n\n';
+    txt += '  ✅ Download premium tanpa batas limit\n';
+    txt += '  ✅ Limit harian naik jadi *' + (P.dailyLimit || 100) + '*\n';
+    txt += '  ✅ Bonus daily *' + (P.dailyMoneyMultiplier || 2) + 'x* uang\n';
+    txt += '  ✅ EXP per chat *' + (P.expMultiplier || 2) + 'x* lebih cepat\n';
+    txt += '  ✅ Diskon shop *' + (P.shopDiscount || 20) + '%*\n';
+    txt += '  ✅ Bebas limit sampai *' + (P.maxLimit || 9999) + '*\n\n';
     txt += '━━━━━━━━━━━━━━━━━━━━━━\n';
     txt += '💵 Harga   : *' + formatMoney(P.price || 50000) + '*\n';
     txt += '⏳ Durasi  : *' + (P.durationDays || 30) + ' hari*\n';
@@ -75,10 +74,18 @@ module.exports = {
     if (aktif) {
       txt += '✅ Status kamu: *PREMIUM AKTIF*\n';
       txt += '⏳ Sisa: *' + premiumRemainingDays() + ' hari*\n\n';
+      txt += '🧩 Langkah berikutnya:\n';
+      txt += '  • Pakai fitur download tanpa limit\n';
+      txt += '  • Nikmati bonus lebih besar dari game\n';
+      txt += '  • Cek status dengan *' + config.prefix + 'premium cek*\n\n';
     } else {
-      txt += '📝 Beli dengan uang bot:\n';
-      txt += '    *' + config.prefix + 'premium buy*\n\n';
-      txt += 'Atau hubungi owner:\n';
+      txt += '🚀 Upgrade sekarang:\n';
+      txt += '  *' + config.prefix + 'premium buy*\n\n';
+      txt += '💡 Cara cepat:\n';
+      txt += '  1. Cek saldo kamu\n';
+      txt += '  2. Klik opsi buy premium\n';
+      txt += '  3. Nikmati bonus premium langsung\n\n';
+      txt += '📞 Hubungi owner untuk bantuan:\n';
       txt += '👑 ' + config.ownerName + '\n📞 ' + config.ownerNumber + '\n\n';
     }
     txt += '_' + config.botName + '_';
