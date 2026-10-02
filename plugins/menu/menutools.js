@@ -22,6 +22,10 @@ ${config.prefix}cuaca <kota>
 ${config.prefix}jam
 ${config.prefix}statusbot
 
+🧠 *PREMIUM AI ASSISTANT*
+${config.prefix}ai <pertanyaan>
+${config.prefix}ask <pertanyaan>
+
 ⚙️ *UTILITY*
 ${config.prefix}bmi <berat> <tinggi>
 ${config.prefix}acakangka <min> <max>

@@ -318,6 +318,13 @@ yora-botz/
 ```
 _Semua downloader berjalan **tanpa API key**. Opsional: pasang `yt-dlp` di server sebagai cadangan._
 
+### 🧠 Premium AI Assistant
+```
+.ai <pertanyaan>    → Tanya bot dengan jawaban cepat berbasis FAQ premium
+.ask <pertanyaan>   → Alias singkat dari .ai
+```
+Fitur premium ini membantu user cepat mendapatkan info bot, fitur, cara daftar, cara premium, dan shortcut command utama tanpa harus membuka menu panjang.
+
 ### ℹ️ Info
 ```
 .ping         → Test latency bot

@@ -37,6 +37,7 @@ module.exports = {
   premiumOnly: [
     'tourl', 'emojimix',
     'youtube', 'ytmp4', 'ytmp3', 'tiktok', 'instagram', 'ig',
+    'ai', 'ask', 'assistant', 'askbot',
   ],
 
   // ═══════════════════════════════════════════════════════════════
