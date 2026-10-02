@@ -86,6 +86,7 @@ module.exports = {
 
   ◈  🔄  ${config.prefix}reloadplugins
   ◈  🔄  ${config.prefix}restartbot
+  ◈  🛡️  ${config.prefix}restartsafe <detik> <alasan>
   ◈  ⏱️  ${config.prefix}runtime
   ◈  🏓  ${config.prefix}ping
 
