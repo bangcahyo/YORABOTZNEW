@@ -100,6 +100,8 @@ module.exports = {
   ◈  👤  ${config.prefix}profile   → Profil
   ◈  🎁  ${config.prefix}daily     → Daily
   ◈  🏆  ${config.prefix}leaderboard
+  ◈  ℹ️  ${config.prefix}about     → Tentang bot
+  ◈  📦  ${config.prefix}version   → Versi bot
   ◈  ⏱️  ${config.prefix}runtime
   ◈  🏓  ${config.prefix}ping
 
