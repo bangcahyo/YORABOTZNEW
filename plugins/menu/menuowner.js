@@ -91,6 +91,7 @@ module.exports = {
   ◈  🔒  ${config.prefix}whitelist <on/off/add/del/list>
   ◈  🧪  ${config.prefix}systemaudit
   ◈  📊  ${config.prefix}commandstats
+  ◈  📜  ${config.prefix}activitylog
   ◈  ⏱️  ${config.prefix}runtime
   ◈  🏓  ${config.prefix}ping
 

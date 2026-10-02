@@ -441,6 +441,8 @@ _Semua downloader berjalan **tanpa API key**. Opsional: pasang `yt-dlp` di serve
 .systemaudit        → Audit sistem bot
 .commandstats       → Statistik pemakaian command (top 10)
 .commandstats reset → Reset statistik command
+.activitylog        → Log aktivitas bot (10 terakhir)
+.activitylog clear   → Reset log aktivitas
 .restartsafe 5 maintenance → Restart aman setelah 5 detik
 .addmoney @u <jml>  → Tambah uang
 .addlimit @u <jml>  → Tambah limit

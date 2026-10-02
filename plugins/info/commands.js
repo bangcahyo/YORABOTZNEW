@@ -69,6 +69,7 @@ module.exports = {
 👑 *Owner*
   • ${prefix}menuowner
   • ${prefix}commandstats
+  • ${prefix}activitylog
   • ${prefix}broadcast
   • ${prefix}backup
   • ${prefix}reloadcfg

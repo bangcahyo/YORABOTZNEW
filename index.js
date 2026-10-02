@@ -215,6 +215,9 @@ function buildContext(sock, msg, args) {
     saveDB: saveDB,
     loadCommandStats: database.loadCommandStats,
     resetCommandStats: database.resetCommandStats,
+    loadActivityLog: database.loadActivityLog,
+    pushActivity: database.pushActivity,
+    clearActivityLog: database.clearActivityLog,
     loadGroups: loadGroups,
     saveGroups: saveGroups,
     getGroupSettings: getGroupSettings,
@@ -714,6 +717,19 @@ async function startBot() {
           '• *' + config.prefix + 'premium* — info premium\n\n' +
           suggestionLine +
           'Jika butuh bantuan, kirim *' + config.prefix + 'help* atau hubungi owner.';
+        try {
+          database.pushActivity({
+            type: 'unknown_command',
+            command: command,
+            user: sender,
+            senderNumber: senderNumber,
+            from: from,
+            text: text || command,
+            success: false,
+          });
+        } catch (err) {
+          console.error('❌ Gagal menyimpan log command tidak dikenal: ' + err.message);
+        }
         await sock.sendMessage(from, { text: helpText }, { quoted: msg });
         return;
       }
@@ -722,9 +738,18 @@ async function startBot() {
       const ctx = buildContext(sock, msg, args);
       try {
         await plugin.execute(sock, msg, args, ctx);
-        if (plugin.name !== 'commandstats') {
+        if (plugin.name !== 'commandstats' && plugin.name !== 'activitylog') {
           try {
             database.recordCommandUsage(plugin.name);
+            database.pushActivity({
+              type: 'command',
+              command: plugin.name,
+              user: sender,
+              senderNumber: senderNumber,
+              from: from,
+              text: text || plugin.name,
+              success: true,
+            });
           } catch (err) {
             console.error('❌ Gagal menyimpan statistik command: ' + err.message);
           }
