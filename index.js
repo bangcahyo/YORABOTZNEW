@@ -23,6 +23,7 @@ const helper = require('./lib/helper');
 const level = require('./lib/level');
 const premiumLib = require('./lib/premium');
 const { getCommandPolicy } = require('./lib/command-policy');
+const { requiresRegister, sendRegisterRequired } = require('./lib/gate');
 const { notifyOwner } = require('./lib/owner-notification');
 
 const getUser = database.getUser;
@@ -561,6 +562,18 @@ async function startBot() {
 
       if (!text) return;
 
+      const registrationCommand = text.startsWith(config.prefix)
+        ? text.slice(config.prefix.length).trim().split(/\s+/)[0].toLowerCase()
+        : '';
+      if (
+        requiresRegister(registrationCommand) &&
+        !getUser(sender).registered &&
+        !isSenderOwner(msg, sender)
+      ) {
+        await sendRegisterRequired(sock, from, config);
+        return;
+      }
+
       // AUTO-JAWAB GAME
       if (gameState[from] && gameState[from].sender === sender) {
         const g = gameState[from];
@@ -706,35 +719,6 @@ async function startBot() {
       const user = getUser(sender);
       const ownerUser = isSenderOwner(msg, sender);
       const userPremium = premiumLib.isPremium(user);
-
-      // REGISTRATION GATE
-      if (config.registrationRequired) {
-        const gateAllowed = [
-          'menu', 'help', 'daftar', 'register', 'reg',
-          'owner', 'ownerku', 'own', 'runtime', 'uptime', 'rt',
-          'ping', 'botinfo', 'info', 'tqto', 'thanks', 'credit',
-          'fitur', 'features', 'commands', 'premium', 'prem',
-        ];
-
-        if (!gateAllowed.includes(command) && !gateAllowed.includes(canonicalCommand) && !user.registered && !ownerUser) {
-          return sock.sendMessage(from, {
-            text: '╔══════════════════════════════════╗\n' +
-              '║   🚫 *REGISTRATION REQUIRED*     ║\n' +
-              '╚══════════════════════════════════╝\n\n' +
-              '⚠️ Kamu *belum terdaftar*!\n\n' +
-              '📝 Daftar dulu:\n\n' +
-              '    *' + config.prefix + 'daftar <namamu>*\n\n' +
-              'Contoh:\n' +
-              '*' + config.prefix + 'daftar Cahyo Store*\n\n' +
-              '━━━━━━━━━━━━━━━━━━━━━━\n\n' +
-              '✅ *Keuntungan daftar:*\n' +
-              '• Akses semua fitur bot\n' +
-              '• Data tersimpan permanen\n' +
-              '• Bisa main game & ekonomi\n\n' +
-              '_' + config.botName + '_',
-          });
-        }
-      }
 
       // PREMIUM-ONLY CHECK 🅟
       if (commandPolicy.isPremiumOnly && !userPremium && !ownerUser) {

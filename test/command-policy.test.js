@@ -4,6 +4,7 @@ const path = require('node:path');
 const test = require('node:test');
 const config = require('../config');
 const { getCommandPolicy } = require('../lib/command-policy');
+const { requiresRegister } = require('../lib/gate');
 const premium = require('../lib/premium');
 
 const pluginRoot = path.join(__dirname, '..', 'plugins');
@@ -92,6 +93,16 @@ test('premium and limit policy use canonical commands for downloader aliases', (
   }
 
   assert.equal(policyFor('emix').isPremiumOnly, true);
+});
+
+test('registration is the only command allowed before registration', () => {
+  for (const command of ['daftar', 'register', 'reg']) {
+    assert.equal(requiresRegister(command), false);
+  }
+
+  for (const command of ['', 'menu', 'help', 'ping', 'profile']) {
+    assert.equal(requiresRegister(command), true);
+  }
 });
 
 test('unknown commands remain free and game/fun plugins do not cost limit', () => {
