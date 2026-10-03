@@ -28,13 +28,14 @@ module.exports = {
     }
 
     // Simpan data registrasi + bonus pendaftaran
-    const bonusLimit = 5;
-    const bonusMoney = 500;
+    const bonusLimit = user.registrationBonusClaimed ? 0 : 5;
+    const bonusMoney = user.registrationBonusClaimed ? 0 : 500;
 
     updateUser(sender, {
       name: nama,
       registered: true,
       registeredAt: Date.now(),
+      registrationBonusClaimed: true,
       limit: (user.limit || 0) + bonusLimit,
       money: (user.money || 0) + bonusMoney,
     });

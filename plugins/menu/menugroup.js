@@ -17,7 +17,7 @@ module.exports = {
       pluginList,
       includeCategories: ['group'],
       sections: [
-        { icon: '🛡️', title: 'KEAMANAN', items: [`${config.prefix}antilink on/off`, `${config.prefix}antispam on/off`, `${config.prefix}unmute @user`, `${config.prefix}grouphelp`] },
+        { icon: '🛡️', title: 'KEAMANAN', items: [`${config.prefix}antilink on/off`, `${config.prefix}antispam on/off`, `${config.prefix}mute @user <durasi>`, `${config.prefix}unmute @user`, `${config.prefix}grouphelp`] },
         { icon: '👋', title: 'PESAN SELAMAT DATANG & PAMIT', items: [`${config.prefix}welcome on/off`, `${config.prefix}setwelcome <teks>`, `${config.prefix}setgoodbye <teks>`] },
         { icon: '👥', title: 'KELOLA ANGGOTA', items: [`${config.prefix}kick @user`, `${config.prefix}promote @user`, `${config.prefix}demote @user`, `${config.prefix}tagall <pesan>`] },
         { icon: '📊', title: 'POLL GRUP', items: [`${config.prefix}poll <pertanyaan> | <opsi 1> | <opsi 2>`] },

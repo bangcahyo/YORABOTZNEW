@@ -96,7 +96,7 @@ test('premium and limit policy use canonical commands for downloader aliases', (
 });
 
 test('registration is the only command allowed before registration', () => {
-  for (const command of ['daftar', 'register', 'reg']) {
+  for (const command of ['daftar', 'register', 'reg', 'unreg', 'unregister']) {
     assert.equal(requiresRegister(command), false);
   }
 

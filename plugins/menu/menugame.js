@@ -45,7 +45,6 @@ module.exports = {
             `${config.prefix}tebakhewan`,
             `${config.prefix}tebakibukota`,
             `${config.prefix}tebakbendera`,
-            `${config.prefix}tebaksurah`,
             `${config.prefix}tebakpresiden`,
             `${config.prefix}tebakplanet`,
             `${config.prefix}tebakanime`,
@@ -62,7 +61,7 @@ module.exports = {
             `${config.prefix}family100`,
           ],
         },
-        { icon: '🎮', title: 'PERMAINAN PAPAN', items: [`${config.prefix}ttt`] },
+        { icon: '🎮', title: 'PERMAINAN PAPAN', items: [`${config.prefix}ttt @user — tantang pemain lain; terima, lalu kirim angka 1–9 tanpa prefix`] },
         {
           icon: '💡',
           title: 'CARA BERMAIN',

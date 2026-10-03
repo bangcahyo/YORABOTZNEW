@@ -30,6 +30,7 @@ const { startStorageMonitor, stopStorageMonitor } = require('./lib/storage-monit
 const { startDatabaseBackup, stopDatabaseBackup } = require('./lib/database-backup');
 const { getBannedUser, shouldNotifyBannedUser } = require('./lib/user-ban');
 const { executeWithProcessingReaction } = require('./lib/processing-reaction');
+const { handleTttInput } = require('./lib/ttt-game');
 
 const getUser = database.getUser;
 const updateUser = database.updateUser;
@@ -97,17 +98,19 @@ function isPremiumCommand(command) {
 
 // Command yang TIDAK memotong limit (gratis / info / menu / owner)
 const noLimitCommands = [
-  'menu', 'help', 'menugame', 'menugames', 'menufun', 'menuhiburan',
+  'menu', 'help', 'start', 'menugame', 'menugames', 'menufun', 'menuhiburan',
   'menuekonomi', 'menueco', 'menulevel', 'menugroup', 'menuadmin',
-  'menuowner', 'menuown', 'menutools', 'menudownload', 'menu',
+  'menuowner', 'menuown', 'menutools', 'menutool', 'menudownload', 'menudownloadmedia',
+  'menumedia', 'menuislami', 'menuislam', 'menusticker', 'menuhd', 'menuupload',
+  'menuqr', 'menuinfo', 'menuai', 'menuutilitas', 'menu',
   'runtime', 'uptime', 'rt', 'perf', 'performance', 'cleanup', 'clearcache', 'storage', 'diskusage', 'profile', 'profil',
   'owner', 'ownerku', 'own', 'info', 'botinfo', 'ban', 'block', 'unban', 'unblock',
   'mode', 'botmode', 'self', 'public', 'ping',
   'tqto', 'thanks', 'credit', 'sc', 'fitur', 'features', 'commands',
-  'daftar', 'register', 'reg',
+  'daftar', 'register', 'reg', 'unreg', 'unregister',
   'limit', 'point', 'uang', 'money', 'daily', 'shop',
   'level', 'lvl', 'rank', 'peringkat', 'leaderboard', 'lb', 'top',
-  'antilink', 'antispam', 'unmute', 'welcome', 'setwelcome', 'setgoodbye',
+  'antilink', 'antispam', 'mute', 'unmute', 'welcome', 'setwelcome', 'setgoodbye',
   'kick', 'promote', 'demote', 'tagall', 'groupinfo',
   'poll',
   'id', 'groupid', 'cekid',
@@ -570,6 +573,28 @@ async function startBot() {
         return;
       }
 
+      if (isGroup(from) && !ownerSender) {
+        const muteState = spamTracker[sender];
+        const now = Date.now();
+        if (muteState?.manualMutedUntil > now) {
+          try { await sock.sendMessage(from, { delete: msg.key }); } catch (error) {
+            console.error('Gagal menghapus pesan user yang dimute:', error.message);
+          }
+          if (!muteState.manualMuteNotifiedAt || now - muteState.manualMuteNotifiedAt > 60_000) {
+            muteState.manualMuteNotifiedAt = now;
+            await sock.sendMessage(from, {
+              text: '🔇 Pesan @' + senderNumber + ' dihapus karena masih dalam masa mute.',
+              mentions: [sender],
+            });
+          }
+          return;
+        }
+        if (muteState?.manualMutedUntil) {
+          muteState.manualMutedUntil = 0;
+          muteState.manualMuteNotifiedAt = 0;
+        }
+      }
+
       if (!text) return;
 
       // Anti-spam hanya menghitung command, bukan obrolan atau jawaban game.
@@ -604,6 +629,11 @@ async function startBot() {
       ) {
         await sendRegisterRequired(sock, from, config);
         return;
+      }
+
+      if (gameState[from]?.game === 'ttt-pending' || gameState[from]?.game === 'ttt') {
+        const gameContext = buildContext(sock, msg, []);
+        if (await handleTttInput(sock, msg, gameContext, text)) return;
       }
 
       // AUTO-JAWAB GAME

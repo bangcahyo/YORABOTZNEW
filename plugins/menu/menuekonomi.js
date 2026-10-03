@@ -23,19 +23,19 @@ module.exports = {
           title: 'AKUN & PROFIL',
           items: [
             `${config.prefix}daftar <nama> — daftar akun`,
+            `${config.prefix}unreg — hapus status pendaftaran`,
             `${config.prefix}profile — lihat profil`,
-            `${config.prefix}limit — cek sisa limit`,
-            `${config.prefix}limit info — info penggunaan limit`,
+            `${config.prefix}limit [info] — cek sisa limit / detail penggunaan`,
             `${config.prefix}point — cek poin`,
             `${config.prefix}uang — cek saldo`,
           ],
         },
         {
           icon: '💎',
-          title: 'PREMIUM',
+          title: 'PAKET PREMIUM',
           items: [
-            `${config.prefix}premium — info dan status Premium`,
-            `${config.prefix}premium buy — beli Premium`,
+            `${config.prefix}premium — info paket & status akun`,
+            `${config.prefix}premium buy — beli paket`,
             `${config.prefix}premium cek — cek masa aktif`,
             `${config.prefix}premiumcard — kartu profil`,
             `${config.prefix}briefing — ringkasan akun`,
@@ -58,8 +58,9 @@ module.exports = {
           items: [
             `${config.prefix}shop — lihat produk dan harga`,
             `${config.prefix}buy <item> — beli produk`,
+            'Harga normal / Premium:',
             ...standardItems.map(item =>
-              `${item.name}: ${formatMoney(item.price)} · Premium: ${formatMoney(premiumPrices.get(item.key))}`,
+              `${item.name}: ${formatMoney(item.price)} / ${formatMoney(premiumPrices.get(item.key))}`,
             ),
           ],
         },

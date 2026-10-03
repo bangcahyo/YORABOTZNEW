@@ -1,7 +1,5 @@
 const { loadVoiceMessage, renderMenu } = require('../../lib/menu-layout');
 
-const GREETINGS = ['✨ Halo', '🔥 Hai', '⚡ Salam', '💫 Apa kabar?', '👋 Halo'];
-
 function getTimeGreeting(timeZone) {
   const hour = Number(new Intl.DateTimeFormat('en-US', {
     timeZone,
@@ -15,11 +13,14 @@ function getTimeGreeting(timeZone) {
   return '🌙 Selamat malam';
 }
 
-function formatTanggal() {
-  const hari = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
-  const bulan = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
-  const date = new Date();
-  return `${hari[date.getDay()]}, ${date.getDate()} ${bulan[date.getMonth()]} ${date.getFullYear()}`;
+function formatTanggal(timeZone) {
+  return new Intl.DateTimeFormat('id-ID', {
+    timeZone,
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  }).format(new Date());
 }
 
 module.exports = {
@@ -30,9 +31,13 @@ module.exports = {
     const { config, from } = ctx;
     const user = ctx.user || { limit: 0, money: 0, point: 0, exp: 0, registered: false };
     const prefix = config.prefix || '.';
-    const greeting = Math.random() < 0.5
-      ? GREETINGS[Math.floor(Math.random() * GREETINGS.length)]
-      : getTimeGreeting(config.autoBroadcast?.timezone || 'Asia/Jakarta');
+    const timeZone = config.autoBroadcast?.timezone || 'Asia/Jakarta';
+    const timeGreeting = getTimeGreeting(timeZone);
+    const sender = ctx.sender;
+    const senderNumber = ctx.senderNumber || (sender ? sender.split('@')[0].replace(/[^0-9]/g, '') : '');
+    const greetingName = senderNumber ? `@${senderNumber}` : (ctx.pushName || 'Pengguna');
+    const mentions = sender ? [sender] : [];
+    const mentionOptions = mentions.length ? { mentions } : {};
     const isOwner = Boolean(ctx.isSenderOwner && ctx.isSenderOwner());
     const isPremium = Boolean(ctx.isPremium && ctx.isPremium());
     const role = isOwner ? 'Owner' : isPremium ? 'Premium' : user.registered ? 'Anggota' : 'Belum terdaftar';
@@ -45,7 +50,7 @@ module.exports = {
     const sections = [
       {
         icon: '👋',
-        title: `${greeting}, ${ctx.pushName || 'Pengguna'}${isOwner ? ' 👑' : ''}`,
+        title: `Halo kak ${greetingName}, ${timeGreeting}${isOwner ? ' 👑' : ''}`,
         items: [
           `Peran: *${role}*`,
           `Level: *${level}* · EXP: *${user.exp || 0}*`,
@@ -62,7 +67,9 @@ module.exports = {
           `${prefix}menuekonomi — profil, ekonomi, dan toko`,
           `${prefix}menulevel — level dan peringkat`,
           `${prefix}menugroup — pengaturan grup`,
-          `${prefix}menutools — stiker dan utilitas`,
+          `${prefix}menumedia — unduh, stiker, dan olah media`,
+          `${prefix}menuislami — kuis Islami`,
+          `${prefix}menutools — AI dan utilitas`,
           ...(isOwner ? [`${prefix}menuowner — panel owner`] : []),
         ],
       },
@@ -86,7 +93,7 @@ module.exports = {
         icon: 'ℹ️',
         title: 'INFORMASI BOT',
         items: [
-          `Tanggal: ${formatTanggal()}`,
+          `Tanggal: ${formatTanggal(timeZone)}`,
           `Total akun: *${totalUsers}*`,
           `Waktu aktif: *${uptimeText}*`,
           `Owner: ${config.ownerName}`,
@@ -133,13 +140,13 @@ module.exports = {
     if ((mode === 'image' || mode === 'both') && config.menuImageUrl) {
       sends.push((async () => {
         try {
-          await sock.sendMessage(from, { image: { url: config.menuImageUrl }, caption: menuText });
+          await sock.sendMessage(from, { image: { url: config.menuImageUrl }, caption: menuText, ...mentionOptions });
         } catch {
-          await sock.sendMessage(from, { text: menuText });
+          await sock.sendMessage(from, { text: menuText, ...mentionOptions });
         }
       })());
     } else {
-      sends.push(sock.sendMessage(from, { text: menuText }));
+      sends.push(sock.sendMessage(from, { text: menuText, ...mentionOptions }));
     }
 
     await Promise.all(sends);

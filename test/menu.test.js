@@ -56,16 +56,6 @@ for (const category of fs.readdirSync(pluginRoot)) {
   }
 }
 
-const menuCategories = {
-  menugame: ['game'],
-  menufun: ['fun'],
-  menuekonomi: ['ekonomi'],
-  menulevel: ['level'],
-  menugroup: ['group'],
-  menutools: ['tools', 'sticker', 'download'],
-  menuowner: ['owner'],
-};
-
 const escapedPrefix = config.prefix.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 test('main menu greeting follows the configured timezone', async () => {
@@ -79,10 +69,12 @@ test('main menu greeting follows the configured timezone', async () => {
     }
     static now() { return fixedInstant; }
   };
-  Math.random = () => 0.6;
+  Math.random = () => 0.1;
 
   try {
     let response;
+    let sendOptions;
+    const sender = '628123456789@s.whatsapp.net';
     const testConfig = {
       ...config,
       autoBroadcast: { ...config.autoBroadcast, timezone: 'Asia/Jakarta' },
@@ -91,18 +83,25 @@ test('main menu greeting follows the configured timezone', async () => {
       voiceMenuUrl: '',
     };
     await menuPlugin.execute({
-      sendMessage: async (_jid, message) => { response = message.text; },
+      sendMessage: async (_jid, message, options) => {
+        response = message.text || message.caption;
+        sendOptions = { ...message, ...options };
+      },
     }, {}, [], {
       config: testConfig,
       from: 'test@g.us',
       user: { limit: 20, money: 1000, point: 0, exp: 0, registered: true },
       pushName: 'Pengguna',
+      sender,
+      senderNumber: '628123456789',
       isSenderOwner: () => false,
       isPremium: () => false,
       loadDB: () => ({}),
     });
 
-    assert.ok(response.includes('Selamat malam'));
+    assert.ok(response.includes('Halo kak @628123456789, 🌙 Selamat malam'));
+    assert.ok(response.includes('Tanggal: Sabtu, 3 Oktober 2026'));
+    assert.deepEqual(sendOptions.mentions, [sender]);
   } finally {
     global.Date = OriginalDate;
     Math.random = originalRandom;
@@ -141,13 +140,47 @@ test('all menu pages render cleanly and list only registered commands', async ()
 
     assert.equal(typeof response, 'string', `${plugin.name} should send text`);
     assert.ok(!response.includes('\uFFFD'), `${plugin.name} contains a broken replacement character`);
+    assert.ok(!response.includes('COMMAND LAINNYA'), `${plugin.name} should not append unlisted commands`);
     if (plugin.name === 'menu') assert.ok(response.includes(`${config.prefix}sc`), 'main menu should list .sc');
-    for (const category of menuCategories[plugin.name] || []) {
-      for (const command of loadedPlugins.filter(item => item.category === category)) {
-        const names = [command.name, ...(command.aliases || [])];
-        assert.ok(names.some(name => response.includes(`\`${config.prefix}${name}\``)),
-          `${plugin.name} should list ${command.name}`);
+    if (plugin.name === 'menu') {
+      assert.ok(response.includes(`${config.prefix}menumedia`), 'main menu should link the media category');
+      assert.ok(response.includes(`${config.prefix}menuislami`), 'main menu should link the Islamic category');
+    }
+    if (plugin.name === 'menumedia') {
+      for (const category of ['menudownload', 'menusticker', 'menuhd', 'menuupload', 'menuqr']) {
+        assert.ok(response.includes(`${config.prefix}${category}`), `media menu should link ${category}`);
       }
+      assert.ok(!response.includes(`${config.prefix}youtube`), 'media hub should not mix download commands into category links');
+    }
+    if (plugin.name === 'menudownload') assert.ok(response.includes(`${config.prefix}youtube`));
+    if (plugin.name === 'menusticker') assert.ok(response.includes(`${config.prefix}sticker`));
+    if (plugin.name === 'menuhd') assert.ok(response.includes(`${config.prefix}hdvideo`));
+    if (plugin.name === 'menuupload') assert.ok(response.includes(`${config.prefix}tourl`));
+    if (plugin.name === 'menuqr') assert.ok(response.includes(`${config.prefix}qr`));
+    if (plugin.name === 'menutools') {
+      for (const category of ['menuinfo', 'menuai', 'menuutilitas']) {
+        assert.ok(response.includes(`${config.prefix}${category}`), `tools menu should link ${category}`);
+      }
+      assert.ok(!response.includes(`${config.prefix}wiki`), 'tools hub should not mix information commands into category links');
+    }
+    if (plugin.name === 'menuinfo') assert.ok(response.includes(`${config.prefix}wiki`));
+    if (plugin.name === 'menuai') assert.ok(response.includes(`${config.prefix}ai`));
+    if (plugin.name === 'menuutilitas') assert.ok(response.includes(`${config.prefix}bmi`));
+    if (plugin.name === 'menuislami') assert.ok(response.includes(`${config.prefix}tebaksurah`));
+    if (plugin.name === 'menugame') assert.ok(!response.includes(`${config.prefix}tebaksurah`));
+    if (plugin.name === 'menutools') assert.ok(!response.includes(`${config.prefix}hdvideo`));
+    if (plugin.name === 'menugroup') {
+      assert.ok(response.includes(`\`${config.prefix}mute\` @user <durasi>`), 'group menu should list .mute');
+      assert.ok(response.includes(`\`${config.prefix}unmute\` @user`), 'group menu should list .unmute');
+    }
+    if (plugin.name === 'menuekonomi') {
+      assert.ok(response.includes('info paket & status akun'));
+      assert.ok(response.includes('Harga normal / Premium:'));
+      assert.ok(response.includes(`\`${config.prefix}limit\` [info] — cek sisa limit / detail penggunaan`));
+      assert.ok(!response.includes('info dan status Premium'));
+    }
+    if (plugin.name === 'menuowner') {
+      assert.ok(response.includes(`\`${config.prefix}cleanup\` [confirm] — pratinjau atau hapus kandidat cache/temp`));
     }
     const listedCommands = [...response.matchAll(new RegExp(`(?:^|\\s)${escapedPrefix}([a-z][a-z0-9_-]*)`, 'gim'))]
       .map(match => match[1].toLowerCase());

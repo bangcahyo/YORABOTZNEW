@@ -1,13 +1,43 @@
 module.exports = {
   name: 'ttt', category: 'game', aliases: ['tictactoe'],
   async execute(sock, msg, args, ctx) {
-    const { config, from, sender, user, updateUser, gameState } = ctx;
-    if (user.money < 500) return sock.sendMessage(from, { text: '❌ Butuh Rp 500!' }, { quoted: msg });
-    updateUser(sender, { money: user.money - 500 });
-    const papan = ['1️⃣','2️⃣','3️⃣','4️⃣','5️⃣','6️⃣','7️⃣','8️⃣','9️⃣'];
-    const botPos = Math.floor(Math.random() * 9);
-    papan[botPos] = '❌';
-    gameState[from] = { game: 'ttt', papan, player: sender, botEmoji: '❌', playerEmoji: '⭕' };
-    await sock.sendMessage(from, { text: `🎮 *TIC TAC TOE*\n\n${papan.slice(0,3).join(' ')}\n${papan.slice(3,6).join(' ')}\n${papan.slice(6,9).join(' ')}\n\nKamu: ⭕ | Bot: ❌\n\nLangkah: *${config.prefix}tttmove <1-9>*` }, { quoted: msg });
+    const { from, sender, user, getUser, gameState, mentioned, isGroup, setGameTimeout } = ctx;
+    if (!isGroup()) {
+      return sock.sendMessage(from, { text: 'Tic Tac Toe hanya bisa dimainkan di grup.' }, { quoted: msg });
+    }
+    if (gameState[from]) {
+      return sock.sendMessage(from, { text: 'Masih ada permainan yang aktif di grup ini.' }, { quoted: msg });
+    }
+    if (!user.registered) {
+      return sock.sendMessage(from, { text: 'Daftar dulu sebelum bermain Tic Tac Toe.' }, { quoted: msg });
+    }
+
+    const opponents = [...new Set(mentioned || [])].filter(jid => jid !== sender);
+    if (opponents.length !== 1) {
+      return sock.sendMessage(from, { text: 'Tantang satu pemain dengan `.ttt @user`.' }, { quoted: msg });
+    }
+
+    const opponent = opponents[0];
+    const opponentUser = getUser(opponent);
+    if (!opponentUser.registered) {
+      return sock.sendMessage(from, { text: `@${opponent.split('@')[0]} harus daftar dulu sebelum bermain.`, mentions: [opponent] }, { quoted: msg });
+    }
+    if (user.money < 500 || opponentUser.money < 500) {
+      return sock.sendMessage(from, { text: 'Kedua pemain harus memiliki minimal Rp500 untuk taruhan.' }, { quoted: msg });
+    }
+
+    const challenge = { game: 'ttt-pending', challenger: sender, opponent };
+    gameState[from] = challenge;
+    setGameTimeout(from, async () => {
+      if (gameState[from] !== challenge) return;
+      await sock.sendMessage(from, {
+        text: `⌛ Tantangan Tic Tac Toe untuk @${opponent.split('@')[0]} kedaluwarsa.`,
+        mentions: [opponent],
+      });
+    });
+    await sock.sendMessage(from, {
+      text: `🎮 @${opponent.split('@')[0]}, @${sender.split('@')[0]} menantangmu bermain Tic Tac Toe.\n\nBalas *terima* atau *tolak* tanpa prefix. Jika diterima, masing-masing membayar Rp500.`,
+      mentions: [sender, opponent],
+    }, { quoted: msg });
   }
 };
