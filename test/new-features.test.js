@@ -3,6 +3,8 @@ const test = require('node:test');
 const poll = require('../plugins/group/poll');
 const qr = require('../plugins/tools/qr');
 const ship = require('../plugins/fun/ship');
+const hd = require('../plugins/tools/hd');
+const sharp = require('sharp');
 
 test('.poll sends a native single-choice group poll', async () => {
   let sent;
@@ -52,4 +54,27 @@ test('.ship is deterministic and order-independent', async () => {
 
   assert.equal(responses[0], responses[1]);
   assert.match(responses[0], /\d+%/);
+});
+
+test('.hd upscales and sharpens a quoted image locally', async () => {
+  const input = await sharp({ create: { width: 80, height: 60, channels: 3, background: '#777777' } }).png().toBuffer();
+  let sent;
+  await hd.execute({
+    sendMessage: async (_to, message) => { sent = message; },
+  }, {
+    key: { remoteJid: 'group@g.us' },
+    message: { extendedTextMessage: { contextInfo: { stanzaId: 'image-id', quotedMessage: { imageMessage: {} } } } },
+  }, [], {
+    from: 'group@g.us',
+    downloadMediaMessage: async fullMessage => {
+      assert.equal(fullMessage.key.id, 'image-id');
+      return input;
+    },
+  });
+
+  const metadata = await sharp(sent.image).metadata();
+  assert.equal(metadata.width, 160);
+  assert.equal(metadata.height, 120);
+  assert.equal(sent.mimetype, 'image/jpeg');
+  assert.match(sent.caption, /detail yang tidak ada/);
 });

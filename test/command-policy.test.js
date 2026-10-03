@@ -3,8 +3,8 @@ const fs = require('node:fs');
 const path = require('node:path');
 const test = require('node:test');
 const config = require('../config');
-const { getCommandPolicy } = require('../lib/command-policy');
-const { requiresRegister } = require('../lib/gate');
+const { getCommandPolicy, isCommandText } = require('../lib/command-policy');
+const { getRegistrationCommand, requiresRegister } = require('../lib/gate');
 const premium = require('../lib/premium');
 
 const pluginRoot = path.join(__dirname, '..', 'plugins');
@@ -103,6 +103,20 @@ test('registration is the only command allowed before registration', () => {
   for (const command of ['', 'menu', 'help', 'ping', 'profile']) {
     assert.equal(requiresRegister(command), true);
   }
+});
+
+test('registration gate ignores non-command chat messages', () => {
+  assert.equal(getRegistrationCommand('halo semua', config.prefix), null);
+  assert.equal(getRegistrationCommand('jawaban game', config.prefix), null);
+  assert.equal(getRegistrationCommand(`${config.prefix}menu`, config.prefix), 'menu');
+  assert.equal(getRegistrationCommand(`${config.prefix}daftar Budi`, config.prefix), 'daftar');
+});
+
+test('anti-spam command detection ignores ordinary chat and recognizes configured prefixes', () => {
+  assert.equal(isCommandText('halo semua', config.prefix), false);
+  assert.equal(isCommandText('jawaban game', config.prefix), false);
+  assert.equal(isCommandText(`${config.prefix}menu`, config.prefix), true);
+  assert.equal(isCommandText('!menu', config.prefix), false);
 });
 
 test('unknown commands remain free and game/fun plugins do not cost limit', () => {

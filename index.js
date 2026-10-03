@@ -22,12 +22,13 @@ const database = require('./lib/database');
 const helper = require('./lib/helper');
 const level = require('./lib/level');
 const premiumLib = require('./lib/premium');
-const { getCommandPolicy } = require('./lib/command-policy');
-const { requiresRegister, sendRegisterRequired } = require('./lib/gate');
+const { getCommandPolicy, isCommandText } = require('./lib/command-policy');
+const { requiresRegister, getRegistrationCommand, sendRegisterRequired } = require('./lib/gate');
 const { notifyOwner } = require('./lib/owner-notification');
 const performanceStats = require('./lib/performance-stats');
 const { startStorageMonitor, stopStorageMonitor } = require('./lib/storage-monitor');
 const { startDatabaseBackup, stopDatabaseBackup } = require('./lib/database-backup');
+const { getBannedUser, shouldNotifyBannedUser } = require('./lib/user-ban');
 
 const getUser = database.getUser;
 const updateUser = database.updateUser;
@@ -99,7 +100,7 @@ const noLimitCommands = [
   'menuekonomi', 'menueco', 'menulevel', 'menugroup', 'menuadmin',
   'menuowner', 'menuown', 'menutools', 'menudownload', 'menu',
   'runtime', 'uptime', 'rt', 'perf', 'performance', 'cleanup', 'clearcache', 'storage', 'diskusage', 'profile', 'profil',
-  'owner', 'ownerku', 'own', 'info', 'botinfo',
+  'owner', 'ownerku', 'own', 'info', 'botinfo', 'ban', 'block', 'unban', 'unblock',
   'mode', 'botmode', 'self', 'public', 'ping',
   'tqto', 'thanks', 'credit', 'sc', 'fitur', 'features', 'commands',
   'daftar', 'register', 'reg',
@@ -532,29 +533,6 @@ async function startBot() {
         }
       }
 
-      // ANTI-SPAM
-      if (isGroup(from) && !isSenderOwner(msg, sender)) {
-        const sc = checkSpam(sender);
-        if (sc.spam) {
-          try { await sock.sendMessage(from, { delete: msg.key }); } catch (e) {}
-          if (sc.muted) {
-            if (!spamTracker[sender]?.notified || Date.now() - spamTracker[sender].notified > 30000) {
-              spamTracker[sender].notified = Date.now();
-              await sock.sendMessage(from, {
-                text: '🚫 *ANTI-SPAM*\n\n@' + senderNumber + ' di-mute ' + sc.sisa + ' detik!',
-                mentions: [sender],
-              });
-            }
-          } else {
-            await sock.sendMessage(from, {
-              text: '⚠️ *PERINGATAN* (' + sc.warned + '/' + config.warningBeforeMute + ')\n\n@' + senderNumber + ', jangan spam!',
-              mentions: [sender],
-            });
-          }
-          return;
-        }
-      }
-
       // AMBIL TEXT
       let text = '';
       if (type === 'conversation') text = msg.message.conversation;
@@ -568,12 +546,57 @@ async function startBot() {
         || msg.message?.templateButtonReplyMessage?.selectedId;
       if (btnId) text = config.prefix + btnId;
 
+      const ownerSender = isSenderOwner(msg, sender);
+      const bannedUser = getBannedUser(loadDB(), [
+        sender,
+        msg.key.participant,
+        msg.key.participantAlt,
+        msg.key.participantPn,
+        msg.key.remoteJidAlt,
+        msg.key.senderPn,
+        `${senderNumber}@s.whatsapp.net`,
+      ]);
+      if (bannedUser && !ownerSender) {
+        if (isCommandText(text, config.prefix) && shouldNotifyBannedUser(sender)) {
+          try {
+            await sock.sendMessage(sender, {
+              text: `🚫 Akun kamu diblokir dari penggunaan bot.\nAlasan: ${bannedUser.banReason || 'Tidak mematuhi aturan bot.'}\n\nUntuk banding/unban, hubungi owner: https://wa.me/${config.ownerNumber}`,
+            });
+          } catch (error) {
+            console.error('Gagal mengirim pemberitahuan ban:', error.message);
+          }
+        }
+        return;
+      }
+
       if (!text) return;
 
-      const registrationCommand = text.startsWith(config.prefix)
-        ? text.slice(config.prefix.length).trim().split(/\s+/)[0].toLowerCase()
-        : '';
+      // Anti-spam hanya menghitung command, bukan obrolan atau jawaban game.
+      if (isCommandText(text, config.prefix) && isGroup(from) && !ownerSender) {
+        const sc = checkSpam(sender);
+        if (sc.spam) {
+          try { await sock.sendMessage(from, { delete: msg.key }); } catch (e) {}
+          if (sc.muted) {
+            if (!spamTracker[sender]?.notified || Date.now() - spamTracker[sender].notified > 30000) {
+              spamTracker[sender].notified = Date.now();
+              await sock.sendMessage(from, {
+                text: '🚫 *ANTI-SPAM*\n\n@' + senderNumber + ' di-mute ' + sc.sisa + ' detik!',
+                mentions: [sender],
+              });
+            }
+          } else {
+            await sock.sendMessage(from, {
+              text: '⚠️ *PERINGATAN* (' + sc.warned + '/' + config.warningBeforeMute + ')\n\n@' + senderNumber + ', jangan spam command!',
+              mentions: [sender],
+            });
+          }
+          return;
+        }
+      }
+
+      const registrationCommand = getRegistrationCommand(text, config.prefix);
       if (
+        registrationCommand !== null &&
         requiresRegister(registrationCommand) &&
         !getUser(sender).registered &&
         !isSenderOwner(msg, sender)
@@ -679,7 +702,7 @@ async function startBot() {
       }
 
       // RANDOM QUESTION
-      if (!text.startsWith(config.prefix)) {
+      if (!isCommandText(text, config.prefix)) {
         const lower = text.toLowerCase();
         const rq = [
           { keys: ['kapankah aku menikah', 'kapan aku menikah', 'kapan nikah'], ans: ['💍 *2 tahun lagi* nih!', '💍 Menikah *tahun depan*!', '💍 Sabar ya, *3-5 tahun*!'] },
