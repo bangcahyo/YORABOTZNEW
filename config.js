@@ -89,8 +89,8 @@ module.exports = {
   //                    MEDIA URL
   // ═══════════════════════════════════════════════════════
   menuImageUrl: 'https://files.catbox.moe/m83n8z.png',
-  voiceMenuUrl: 'https://files.catbox.moe/6yaewc.mp3',
-  voiceOwnerUrl: '',
+  voiceMenuUrl: 'https://www.image2url.com/r2/default/audio/1790997980451-a797799f-9a95-47f0-80df-087fff141310.ogg',
+  voiceOwnerUrl: 'https://www.image2url.com/r2/default/audio/1790998332276-f2ed502a-5594-4f02-a63a-51908936343c.ogg',
   sendMenuAs: 'both',
   sendOwnerAs: 'both',
 
