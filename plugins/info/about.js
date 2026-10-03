@@ -3,9 +3,9 @@ const pkg = require('../../package.json');
 module.exports = {
   name: 'about',
   category: 'info',
-  aliases: ['botinfo', 'profilebot', 'tentang'],
+  aliases: ['profilebot', 'tentang'],
   async execute(sock, msg, args, ctx) {
-    const { config, from } = ctx;
+    const { config, from, pluginList } = ctx;
     const uptime = process.uptime();
     const jam = Math.floor(uptime / 3600);
     const menit = Math.floor((uptime % 3600) / 60);
@@ -20,7 +20,7 @@ module.exports = {
   ◆  📞  Nomor      : *${config.ownerNumber}*
   ◆  🌐  Website    : ${config.website}
   ◆  ⏱️  Uptime     : *${jam}h ${menit}m ${detik}s*
-  ◆  🧠  Fitur      : *148 command valid*
+  ◆  🧠  Plugin     : *${(pluginList || []).length} command*
   ◆  🛡️  Status     : *Online & stable*
 
   ${config.botName} adalah bot WhatsApp multipurpose yang dirancang untuk membantu komunitas dengan fitur game, ekonomi, grup, tools, dan premium system.

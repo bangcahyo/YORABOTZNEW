@@ -24,7 +24,8 @@ module.exports = {
       }
       txt += '\n━━━━━━━━━━━━━━━━━━━━━━\n';
       txt += '📌 Default command berlimit: *' + (costs.default || 1) + ' limit*\n';
-      txt += '💎 Premium bebas limit harian hingga *' + (config.premium?.maxLimit || 9999) + '*\n\n';
+      txt += '💎 Premium: command berlimit tidak memotong saldo selama Premium aktif.\n';
+      txt += '📦 Saldo maksimum Premium: *' + (config.premium?.maxLimit || 9999) + '*\n\n';
       txt += '_' + config.botName + '_';
       return sock.sendMessage(from, { text: txt }, { quoted: msg });
     }

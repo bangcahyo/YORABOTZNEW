@@ -1,0 +1,14 @@
+diff --git a/node_modules/wa-sticker-formatter/dist/Sticker.js b/node_modules/wa-sticker-formatter/dist/Sticker.js
+index 17e06e9..3ce36ba 100644
+--- a/node_modules/wa-sticker-formatter/dist/Sticker.js
++++ b/node_modules/wa-sticker-formatter/dist/Sticker.js
+@@ -65,7 +65,8 @@ class Sticker {
+                     }))();
+         });
+         this._getMimeType = (data) => __awaiter(this, void 0, void 0, function* () {
+-            const type = yield (0, file_type_1.fromBuffer)(data);
++            const detectFileType = file_type_1.fileTypeFromBuffer || file_type_1.fromBuffer;
++            const type = yield detectFileType(data);
+             if (!type) {
+                 if (typeof this.data === 'string')
+                     return 'image/svg+xml';

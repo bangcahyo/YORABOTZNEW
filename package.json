@@ -4,7 +4,9 @@
   "description": "Yora Botz - Premium WhatsApp Bot Multi-Fitur",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js"
+    "start": "node index.js",
+    "test": "node --test",
+    "postinstall": "patch-package"
   },
   "author": "Cahyo Store",
   "license": "MIT",
@@ -12,11 +14,23 @@
     "@distube/ytdl-core": "^4.16.12",
     "@hapi/boom": "^10.0.1",
     "@whiskeysockets/baileys": "6.7.24",
+    "form-data": "^4.0.6",
     "pino": "^9.0.0",
-    "sharp": "^0.32.6",
+    "sharp": "^0.35.5",
     "wa-sticker-formatter": "^4.4.4"
   },
+  "devDependencies": {
+    "patch-package": "^8.0.1"
+  },
+  "overrides": {
+    "wa-sticker-formatter": {
+      "axios": "^1.20.0",
+      "file-type": "^21.3.4",
+      "image-size": "^2.0.4",
+      "sharp": "^0.35.5"
+    }
+  },
   "engines": {
-    "node": ">=20"
+    "node": ">=20.18.1"
   }
 }

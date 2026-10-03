@@ -22,6 +22,7 @@ const database = require('./lib/database');
 const helper = require('./lib/helper');
 const level = require('./lib/level');
 const premiumLib = require('./lib/premium');
+const { getCommandPolicy } = require('./lib/command-policy');
 
 const getUser = database.getUser;
 const updateUser = database.updateUser;
@@ -106,7 +107,7 @@ const noLimitCommands = [
   'broadcast', 'backup', 'backupdb', 'restore', 'restoredb', 'restoreyes', 'restoreno',
   'getcfg', 'getconfig', 'setcfg', 'setconfig', 'reloadcfg', 'reloadconfig',
   'showconfig', 'showcfg', 'toggle', 'readfile', 'listfiles', 'ls',
-  'savefile', 'sf', 'upload', 'reloadplugins', 'reloadp', 'reload',
+  'savefile', 'sf', 'reloadplugins', 'reloadp', 'reload',
   'restartbot', 'restart', 'reboot', 'autobroadcast', 'ab', 'waktubc',
   'premium', 'prem', 'buypremium', 'addpremium', 'delpremium', 'listpremium', 'cekpremium',
   'nyerah', 'menyerah', 'giveup', 'skip',
@@ -120,10 +121,10 @@ function loadPlugins() {
   const dir = path.join(__dirname, 'plugins');
   if (!fs.existsSync(dir)) {
     console.log('⚠️ Folder plugins tidak ada');
-    return;
+    return { loaded: pluginList.length, failed: 1, applied: false };
   }
 
-  const cats = fs.readdirSync(dir).filter(function(f) {
+  const cats = fs.readdirSync(dir).sort().filter(function(f) {
     return fs.statSync(path.join(dir, f)).isDirectory();
   });
 
@@ -131,9 +132,13 @@ function loadPlugins() {
   console.log('║      📦 PLUGINS BERHASIL DIMUAT    ║');
   console.log('╚══════════════════════════════════╝');
 
+  const loadedPlugins = [];
+  const nextPlugins = new Map();
+  const nextPluginList = [];
+  let failed = 0;
   for (const cat of cats) {
     const catPath = path.join(dir, cat);
-    const files = fs.readdirSync(catPath).filter(function(f) {
+    const files = fs.readdirSync(catPath).sort().filter(function(f) {
       return f.endsWith('.js');
     });
 
@@ -143,16 +148,18 @@ function loadPlugins() {
         const fullPath = path.join(catPath, file);
         delete require.cache[require.resolve(fullPath)];
         const p = require(fullPath);
-        if (!p.name || !p.execute) continue;
+        if (!p || !p.name || typeof p.execute !== 'function') {
+          failed++;
+          console.log('  ❌ ' + cat + '/' + file + ': metadata plugin tidak valid');
+          continue;
+        }
         p.category = p.category || cat;
         p.aliases = p.aliases || [];
-        pluginList.push(p);
-        plugins.set(p.name.toLowerCase(), p);
-        p.aliases.forEach(function(a) {
-          plugins.set(a.toLowerCase(), p);
-        });
+        nextPluginList.push(p);
+        loadedPlugins.push({ plugin: p, file: cat + '/' + file });
         count++;
       } catch (err) {
+        failed++;
         console.log('  ❌ ' + cat + '/' + file + ': ' + err.message);
       }
     }
@@ -160,7 +167,45 @@ function loadPlugins() {
       console.log('  📁 ' + cat.padEnd(10) + ' : ' + count + ' plugin');
     }
   }
+
+  for (const { plugin, file } of loadedPlugins) {
+    const name = plugin.name.toLowerCase();
+    if (nextPlugins.has(name)) {
+      failed++;
+      console.error('  ❌ Nama command bentrok "' + name + '" di ' + file);
+      continue;
+    }
+    nextPlugins.set(name, plugin);
+  }
+
+  for (const { plugin, file } of loadedPlugins) {
+    const acceptedAliases = [];
+    for (const alias of plugin.aliases) {
+      const key = String(alias).toLowerCase();
+      if (nextPlugins.has(key)) {
+        const existing = nextPlugins.get(key);
+        if (existing !== plugin) {
+          console.error('  ⚠️ Alias "' + key + '" diabaikan (' + file + '), sudah dipakai command "' + existing.name + '"');
+        }
+        continue;
+      }
+      nextPlugins.set(key, plugin);
+      acceptedAliases.push(alias);
+    }
+    plugin.aliases = acceptedAliases;
+  }
+
+  if (failed > 0 && pluginList.length > 0) {
+    console.error('  ⚠️ Reload dibatalkan; daftar plugin aktif sebelumnya dipertahankan.');
+    console.log('  📊 Total    : ' + pluginList.length + ' plugin aktif\n');
+    return { loaded: pluginList.length, failed: failed, applied: false };
+  }
+
+  plugins.clear();
+  for (const [name, plugin] of nextPlugins) plugins.set(name, plugin);
+  pluginList.splice(0, pluginList.length, ...nextPluginList);
   console.log('  📊 Total    : ' + pluginList.length + ' plugin\n');
+  return { loaded: pluginList.length, failed: failed, applied: true };
 }
 
 function levenshteinDistance(a, b) {
@@ -226,6 +271,10 @@ function buildContext(sock, msg, args) {
     updateUser: updateUser,
     loadDB: loadDB,
     saveDB: saveDB,
+    flushDatabase: database.flushDatabase,
+    DB_PATH: path.join(__dirname, 'database', 'users.json'),
+    GROUP_PATH: path.join(__dirname, 'database', 'groups.json'),
+    MODE_PATH: path.join(__dirname, 'database', 'mode.json'),
     loadCommandStats: database.loadCommandStats,
     resetCommandStats: database.resetCommandStats,
     loadActivityLog: database.loadActivityLog,
@@ -239,6 +288,7 @@ function buildContext(sock, msg, args) {
     getGroupSettings: getGroupSettings,
     updateGroupSettings: updateGroupSettings,
     saveMode: saveMode,
+    reloadDatabase: database.reloadDatabase,
     isOwner: isOwner,
     isSenderOwner: function() { return isSenderOwner(msg, sender); },
     isGroup: isGroup,
@@ -267,6 +317,8 @@ function buildContext(sock, msg, args) {
     // Limit 🅛
     getLimitCost: getLimitCost,
     noLimit: noLimitCommands,
+    pluginList: pluginList,
+    reloadPlugins: loadPlugins,
   };
 
   return ctx;
@@ -349,6 +401,11 @@ async function startBot() {
       if (code === DisconnectReason.loggedOut) {
         const sp = path.join(__dirname, config.sessionName);
         if (fs.existsSync(sp)) fs.rmSync(sp, { recursive: true, force: true });
+        try {
+          await database.flushDatabase();
+        } catch (err) {
+          console.error('❌ Gagal menyimpan perubahan database sebelum keluar: ' + err.message);
+        }
         process.exit(0);
       } else {
         console.log('🔄 Reconnect (code ' + code + ')...');
@@ -629,6 +686,14 @@ async function startBot() {
       // PARSE
       const args = text.slice(config.prefix.length).trim().split(/ +/);
       const command = args.shift().toLowerCase();
+      const commandPolicy = getCommandPolicy(
+        command,
+        plugins,
+        getLimitCost,
+        noLimitCommands,
+        isPremiumCommand,
+      );
+      const { plugin, canonicalCommand, limitCost, isFree } = commandPolicy;
 
       // LEVEL SYSTEM
       if (config.levelSystem?.enabled && isGroup(from)) {
@@ -659,7 +724,7 @@ async function startBot() {
           'fitur', 'features', 'commands', 'premium', 'prem',
         ];
 
-        if (!gateAllowed.includes(command) && !user.registered && !ownerUser) {
+        if (!gateAllowed.includes(command) && !gateAllowed.includes(canonicalCommand) && !user.registered && !ownerUser) {
           return sock.sendMessage(from, {
             text: '╔══════════════════════════════════╗\n' +
               '║   🚫 *REGISTRATION REQUIRED*     ║\n' +
@@ -680,7 +745,7 @@ async function startBot() {
       }
 
       // PREMIUM-ONLY CHECK 🅟
-      if (isPremiumCommand(command) && !userPremium && !ownerUser) {
+      if (commandPolicy.isPremiumOnly && !userPremium && !ownerUser) {
         return sock.sendMessage(from, {
           text: '╔══════════════════════════════════╗\n' +
             '║      🅟 *FITUR PREMIUM*          ║\n' +
@@ -697,13 +762,6 @@ async function startBot() {
       }
 
       // LIMIT CHECK 🅛
-      const limitPlugin = plugins.get(command);
-      const limitCategory = limitPlugin ? (limitPlugin.category || '') : '';
-      const limitCost = getLimitCost(command);
-      // Game & Fun 100% GRATIS (tanpa limit) — biar tidak bosen main
-      const isFree = noLimitCommands.includes(command) || limitCost <= 0 ||
-        limitCategory === 'game' || limitCategory === 'fun';
-
       if (!isFree && !ownerUser && !userPremium && user.limit < limitCost) {
         return sock.sendMessage(from, {
           text: '⚠️ *Limit tidak cukup!*\n\n' +
@@ -721,7 +779,6 @@ async function startBot() {
       }
 
       // CARI PLUGIN
-      const plugin = plugins.get(command);
       if (!plugin) {
         const suggestions = findClosestCommand(command);
         const suggestionLine = suggestions.length ? '\nMungkin yang kamu maksud:\n' + suggestions.map((s) => '• *' + config.prefix + s + '*').join('\n') + '\n\n' : '';

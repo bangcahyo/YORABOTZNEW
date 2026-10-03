@@ -4,7 +4,7 @@ const path = require('path');
 module.exports = {
   name: 'savefile',
   category: 'owner',
-  aliases: ['sf', 'upload'],
+  aliases: ['sf'],
   async execute(sock, msg, args, ctx) {
     const { from, isSenderOwner, downloadMediaMessage, config } = ctx;
 

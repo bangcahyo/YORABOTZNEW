@@ -5,77 +5,45 @@ module.exports = {
   async execute(sock, msg, args, ctx) {
     const { config, from } = ctx;
     const prefix = config.prefix || '.';
+    const categories = {
+      download: '📥 Download',
+      ekonomi: '💰 Ekonomi',
+      fun: '🎭 Fun & Random',
+      game: '🎮 Game',
+      group: '🛡️ Grup & Admin',
+      info: 'ℹ️ Informasi',
+      level: '📊 Level',
+      menu: '📂 Menu',
+      owner: '👑 Owner',
+      sticker: '🎨 Sticker',
+      tools: '🛠️ Tools & Utility',
+    };
+    const grouped = new Map();
+    for (const plugin of ctx.pluginList || []) {
+      const category = plugin.category || 'other';
+      if (!grouped.has(category)) grouped.set(category, []);
+
+      const aliases = [...new Set((plugin.aliases || [])
+        .map(alias => String(alias).toLowerCase())
+        .filter(alias => /^[a-z0-9_-]+$/.test(alias) && alias !== plugin.name.toLowerCase()))];
+      const aliasText = aliases.length ? ` (${aliases.map(alias => `${prefix}${alias}`).join(', ')})` : '';
+      grouped.get(category).push(`  • ${prefix}${plugin.name}${aliasText}`);
+    }
+
+    const commandGroups = [...grouped.entries()]
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([category, commands]) =>
+        `${categories[category] || `📦 ${category}`}\n${commands.sort().join('\n')}`,
+      )
+      .join('\n\n');
 
     const text = `╔══════════════════════════════════════╗
 ║      📚  *COMMAND LIST*  📚
 ╚══════════════════════════════════════╝
 
-🧩 *Fitur Utama*
-  • ${prefix}menu
-  • ${prefix}tutorial
-  • ${prefix}about
-  • ${prefix}version
-  • ${prefix}ping
-  • ${prefix}runtime
+📦 Total plugin command: *${(ctx.pluginList || []).length}*
 
-💰 *Ekonomi & Premium*
-  • ${prefix}daftar
-  • ${prefix}profile
-  • ${prefix}daily
-  • ${prefix}limit
-  • ${prefix}uang
-  • ${prefix}point
-  • ${prefix}premium
-  • ${prefix}premium buy
-  • ${prefix}shop
-
-🎮 *Game & Hiburan*
-  • ${prefix}menugame
-  • ${prefix}quiz
-  • ${prefix}slot
-  • ${prefix}tebakgambar
-  • ${prefix}family100
-  • ${prefix}dadu
-  • ${prefix}asahotak
-
-🎭 *Fun & Random*
-  • ${prefix}menufun
-  • ${prefix}quote
-  • ${prefix}pantun
-  • ${prefix}puisi
-  • ${prefix}bucin
-  • ${prefix}zodiak
-
-🛠️ *Tools & Utility*
-  • ${prefix}menutools
-  • ${prefix}jam
-  • ${prefix}bmi
-  • ${prefix}translate
-  • ${prefix}acakangka
-  • ${prefix}reminder
-  • ${prefix}cekpasangan
-  • ${prefix}statusbot
-
-🛡️ *Grup & Admin*
-  • ${prefix}menugroup
-  • ${prefix}grouphelp
-  • ${prefix}welcome on/off
-  • ${prefix}setwelcome <teks>
-  • ${prefix}setgoodbye <teks>
-  • ${prefix}antilink on/off
-  • ${prefix}antispam on/off
-  • ${prefix}tagall <pesan>
-
-👑 *Owner*
-  • ${prefix}menuowner
-  • ${prefix}commandstats
-  • ${prefix}activitylog
-  • ${prefix}alerts
-  • ${prefix}dashboard
-  • ${prefix}broadcast
-  • ${prefix}backup
-  • ${prefix}reloadcfg
-  • ${prefix}restartbot
+${commandGroups}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 💡 Gunakan ${prefix}menu untuk melihat menu utama.

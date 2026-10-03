@@ -2,7 +2,7 @@ const fs = require('fs');
 module.exports = {
   name: 'restore', category: 'owner', aliases: ['restoredb'],
   async execute(sock, msg, args, ctx) {
-    const { config, from, sender, isSenderOwner } = ctx;
+    const { config, from, sender, isSenderOwner, downloadMediaMessage } = ctx;
     if (!isSenderOwner()) return sock.sendMessage(from, { text: '❌ Hanya owner!' }, { quoted: msg });
     const quotedMsg = msg.message.extendedTextMessage?.contextInfo?.quotedMessage;
     if (!quotedMsg || !quotedMsg.documentMessage) {
@@ -10,14 +10,14 @@ module.exports = {
     }
     try {
       const docMsg = quotedMsg.documentMessage;
-      const stream = await sock.downloadMediaMessage({
+      const stream = await downloadMediaMessage({
         key: msg.message.extendedTextMessage.contextInfo.stanzaId ? {
           remoteJid: from,
           id: msg.message.extendedTextMessage.contextInfo.stanzaId,
           fromMe: false,
         } : msg.key,
         message: { documentMessage: docMsg },
-      });
+      }, 'buffer', {}, { logger: console });
       const backupData = JSON.parse(stream.toString('utf-8'));
       if (!backupData.users || !backupData.groups) return sock.sendMessage(from, { text: 'File backup tidak valid!' }, { quoted: msg });
       await sock.sendMessage(from, {

@@ -7,7 +7,7 @@
 **Bot WhatsApp Multi-Fitur dengan Pairing Code — Tanpa QR**
 
 [![Version](https://img.shields.io/badge/v7.2.1-blue?style=flat-square)](https://github.com/bangcahyo/YoraBotz)
-[![Node](https://img.shields.io/badge/node-%3E%3D20-green?style=flat-square)](https://nodejs.org/)
+[![Node](https://img.shields.io/badge/node-%3E%3D20.18.1-green?style=flat-square)](https://nodejs.org/)
 [![Baileys](https://img.shields.io/badge/baileys-6.7.24-purple?style=flat-square)](https://github.com/WhiskeySockets/Baileys)
 [![License](https://img.shields.io/badge/license-MIT-yellow?style=flat-square)](LICENSE)
 
@@ -50,11 +50,11 @@ Fitur premium ditandai dengan **🅟**. User premium mendapatkan keuntungan:
 | Keuntungan | Free | Premium 🅟 |
 |---|---|---|
 | Limit harian | 20 | **100** |
-| Multiplier uang | 1x | **2x** |
+| Bonus uang dari daily | 1x | **2x** |
 | Multiplier EXP | 1x | **2x** |
-| Diskon shop | — | **20%** |
+| Diskon shop | — | **20%** (otomatis saat belanja) |
 | Fitur downloader | ❌ | ✅ |
-| Bebas limit | ❌ | ✅ (bypass limit) |
+| Potongan limit command | Normal | ✅ Tidak dipotong saat Premium aktif |
 | Daily briefing personal | ❌ | ✅ |
 | Kartu profil premium | ❌ | ✅ |
 
@@ -192,6 +192,16 @@ Fitur yang memakai limit ditandai dengan **🅛**. Setiap command punya biaya be
 ---
 
 ## 🚀 Instalasi
+
+### Regression Tests & Database Writes
+
+Jalankan pemeriksaan lokal dengan:
+
+```bash
+npm test
+```
+
+Perubahan database di-cache di memori dan penulisan berulang ke file yang sama digabung dalam jeda singkat, lalu disimpan secara atomik. Backup dan restart aman menunggu penulisan selesai; hentikan bot secara normal agar perubahan terakhir sempat tersimpan. Penghentian paksa server tetap dapat menghilangkan perubahan yang belum sempat di-flush.
 
 ### 1. Clone Repository
 
@@ -614,18 +624,18 @@ rm -rf session
 ╚══════════════════════════════════╝
   📁 Menu       : 8 plugin
   📁 Game       : 40 plugin
-  📁 Ekonomi    : 10 plugin
+  📁 Ekonomi    : 12 plugin
   📁 Level      : 5 plugin
-  📁 Group      : 12 plugin
-  📁 Tools      : 12 plugin
+  📁 Group      : 13 plugin
+  📁 Tools      : 13 plugin
   📁 Download   : 4 plugin
   📁 Fun        : 19 plugin
-  📁 Info       : 6 plugin
+  📁 Info       : 10 plugin
   📁 Sticker    : 3 plugin
-  📁 Owner      : 29 plugin
+  📁 Owner      : 38 plugin
   ───────────────────────────────
-  📊 Total      : 148 plugin
-  🚀 Fitur      : 148 command valid
+  📊 Total      : 165 plugin
+  🚀 Fitur      : 165 plugin command
   🅟 Premium    : aktif
   🅛 Limit      : aktif
 ```

@@ -1,6 +1,6 @@
 const { reloadConfig } = require('../../lib/config-editor');
 module.exports = {
-  name: 'reloadcfg', category: 'owner', aliases: ['reloadconfig','reload'],
+  name: 'reloadcfg', category: 'owner', aliases: ['reloadconfig'],
   async execute(sock, msg, args, ctx) {
     const { from, isSenderOwner } = ctx;
     if (!isSenderOwner()) return sock.sendMessage(from, { text: '❌ Hanya owner!' }, { quoted: msg });

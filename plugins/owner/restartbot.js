@@ -3,7 +3,7 @@ module.exports = {
   category: 'owner',
   aliases: ['restart', 'reboot'],
   async execute(sock, msg, args, ctx) {
-    const { from, isSenderOwner } = ctx;
+    const { from, isSenderOwner, flushDatabase } = ctx;
 
     let isOwner = false;
     try { isOwner = isSenderOwner && isSenderOwner(); } catch {}
@@ -14,6 +14,14 @@ module.exports = {
     });
 
     console.log('\n🔄 RESTART DIMINTA OLEH OWNER\n');
-    setTimeout(() => process.exit(0), 5000);
+    setTimeout(async () => {
+      try {
+        if (typeof flushDatabase === 'function') await flushDatabase();
+        process.exit(0);
+      } catch (err) {
+        console.error('❌ Database flush sebelum restart gagal:', err.message);
+        await sock.sendMessage(from, { text: `❌ Restart dibatalkan karena database gagal disimpan: ${err.message}` });
+      }
+    }, 5000);
   },
 };

@@ -3,7 +3,7 @@ module.exports = {
   category: 'owner',
   aliases: ['safe restart', 'safe-restart', 'restartsafebot', 'restartsafe'],
   async execute(sock, msg, args, ctx) {
-    const { config, from, isSenderOwner } = ctx;
+    const { config, from, isSenderOwner, flushDatabase } = ctx;
 
     if (!isSenderOwner || !isSenderOwner()) {
       return sock.sendMessage(from, { text: '❌ Hanya owner yang bisa menjalankan restart aman.' }, { quoted: msg });
@@ -21,6 +21,14 @@ module.exports = {
     }, { quoted: msg });
 
     console.log(`\n🔄 SAFE RESTART DIMINTA OLEH OWNER | delay=${delay}s | reason=${reason}\n`);
-    setTimeout(() => process.exit(0), Math.max(1, delay) * 1000);
+    setTimeout(async () => {
+      try {
+        if (typeof flushDatabase === 'function') await flushDatabase();
+        process.exit(0);
+      } catch (err) {
+        console.error('❌ Database flush sebelum restart gagal:', err.message);
+        await sock.sendMessage(from, { text: `❌ Restart dibatalkan karena database gagal disimpan: ${err.message}` });
+      }
+    }, Math.max(1, delay) * 1000);
   },
 };

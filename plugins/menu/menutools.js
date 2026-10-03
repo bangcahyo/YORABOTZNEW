@@ -12,9 +12,16 @@ module.exports = {
 🎨 *STICKER*
 ${config.prefix}sticker (reply gambar)
 ${config.prefix}toimg (reply sticker)
+${config.prefix}emojimix <emoji>+<emoji>
 
 📤 *UPLOAD*
 ${config.prefix}tourl (reply media)
+
+📥 *DOWNLOAD* 🅟
+${config.prefix}youtube <url>
+${config.prefix}ytmp3 <url>
+${config.prefix}tiktok <url>
+${config.prefix}instagram <url>
 
 📖 *INFO*
 ${config.prefix}wiki <topik>

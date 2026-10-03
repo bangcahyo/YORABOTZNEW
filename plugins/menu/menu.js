@@ -1,6 +1,3 @@
-const fs = require('fs');
-const path = require('path');
-
 const GREETINGS = ['✨ Hai', '🔥 Welcome', '⚡ Yo', '🌙 Malam', '🌞 Pagi', '💫 Halo', '🎯 Hai hai', '🎨 Salam', '🌟 Yo bro', '👋 Halo'];
 
 function getTimeGreeting() {
@@ -19,14 +16,6 @@ function formatTanggal() {
   return `${hari[d.getDay()]}, ${d.getDate()} ${bulan[d.getMonth()]} ${d.getFullYear()}`;
 }
 
-function getTotalUsers() {
-  try {
-    const p = path.join(__dirname, '..', '..', 'database', 'users.json');
-    if (!fs.existsSync(p)) return 0;
-    return Object.keys(JSON.parse(fs.readFileSync(p, 'utf-8'))).length;
-  } catch { return 0; }
-}
-
 module.exports = {
   name: 'menu',
   category: 'menu',
@@ -41,7 +30,7 @@ module.exports = {
     let ownerTag = '';
     try { if (ctx.isSenderOwner && ctx.isSenderOwner()) ownerTag = ' 👑'; } catch {}
 
-    const totalUsers = getTotalUsers();
+    const totalUsers = ctx.loadDB ? Object.keys(ctx.loadDB()).length : 0;
     const uptime = process.uptime();
     const upJam = Math.floor(uptime / 3600);
     const upMenit = Math.floor((uptime % 3600) / 60);

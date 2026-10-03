@@ -3,9 +3,10 @@ const path = require('path');
 module.exports = {
   name: 'backup', category: 'owner', aliases: ['backupdb'],
   async execute(sock, msg, args, ctx) {
-    const { config, from, isSenderOwner, DB_PATH, GROUP_PATH, MODE_PATH } = ctx;
+    const { config, from, isSenderOwner, DB_PATH, GROUP_PATH, MODE_PATH, flushDatabase } = ctx;
     if (!isSenderOwner()) return sock.sendMessage(from, { text: '❌ Hanya owner!' }, { quoted: msg });
     try {
+      if (typeof flushDatabase === 'function') await flushDatabase();
       const usersData = fs.existsSync(DB_PATH) ? fs.readFileSync(DB_PATH, 'utf-8') : '{}';
       const groupsData = fs.existsSync(GROUP_PATH) ? fs.readFileSync(GROUP_PATH, 'utf-8') : '{}';
       const modeData = fs.existsSync(MODE_PATH) ? fs.readFileSync(MODE_PATH, 'utf-8') : '{}';
