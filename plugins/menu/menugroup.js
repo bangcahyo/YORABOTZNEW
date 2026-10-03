@@ -5,7 +5,7 @@ module.exports = {
   category: 'menu',
   aliases: ['menuadmin'],
   async execute(sock, msg, args, ctx) {
-    const { config, from, isGroup } = ctx;
+    const { config, from, isGroup, pluginList } = ctx;
     if (!isGroup(from)) {
       return sock.sendMessage(from, { text: '❌ Menu ini hanya dapat digunakan di dalam grup.' }, { quoted: msg });
     }
@@ -14,10 +14,13 @@ module.exports = {
       botName: config.botName,
       title: 'FITUR GRUP',
       prefix: config.prefix,
+      pluginList,
+      includeCategories: ['group'],
       sections: [
         { icon: '🛡️', title: 'KEAMANAN', items: [`${config.prefix}antilink on/off`, `${config.prefix}antispam on/off`, `${config.prefix}unmute @user`, `${config.prefix}grouphelp`] },
         { icon: '👋', title: 'PESAN SELAMAT DATANG & PAMIT', items: [`${config.prefix}welcome on/off`, `${config.prefix}setwelcome <teks>`, `${config.prefix}setgoodbye <teks>`] },
         { icon: '👥', title: 'KELOLA ANGGOTA', items: [`${config.prefix}kick @user`, `${config.prefix}promote @user`, `${config.prefix}demote @user`, `${config.prefix}tagall <pesan>`] },
+        { icon: '📊', title: 'POLL GRUP', items: [`${config.prefix}poll <pertanyaan> | <opsi 1> | <opsi 2>`] },
         { icon: 'ℹ️', title: 'INFORMASI GRUP', items: [`${config.prefix}groupinfo`, `${config.prefix}id`] },
       ],
       footer: ['Sejumlah command memerlukan bot sebagai admin grup.'],

@@ -7,6 +7,18 @@ module.exports = {
   async execute(sock, msg, args, ctx) {
     const { config, from } = ctx;
 
+    const cpuStart = process.cpuUsage();
+    const sampleStart = process.hrtime.bigint();
+    await new Promise(resolve => setTimeout(resolve, 250));
+    const cpuUsed = process.cpuUsage(cpuStart);
+    const sampleMicroseconds = Number(process.hrtime.bigint() - sampleStart) / 1000;
+    const cpuPercent = ((cpuUsed.user + cpuUsed.system) / sampleMicroseconds * 100).toFixed(1);
+    const eventLoopLag = Math.max(0, sampleMicroseconds / 1000 - 250).toFixed(1);
+    const processMemory = process.memoryUsage();
+    const rss = (processMemory.rss / (1024 ** 2)).toFixed(1);
+    const heapUsed = (processMemory.heapUsed / (1024 ** 2)).toFixed(1);
+    const heapTotal = (processMemory.heapTotal / (1024 ** 2)).toFixed(1);
+
     const uptime = process.uptime();
     const hari = Math.floor(uptime / 86400);
     const jam = Math.floor((uptime % 86400) / 3600);
@@ -33,6 +45,15 @@ module.exports = {
 
   ◆  🟢  Status  : *Online*
   ◆  ⏱️  Uptime  : *${upStr}*
+
+╭─────────────────────────────────────╮
+│  🤖  *BOT PROCESS*                   │
+╰─────────────────────────────────────╯
+
+  ◈  📦  RSS       : ${rss} MB
+  ◈  🧠  Heap      : ${heapUsed} / ${heapTotal} MB
+  ◈  ⚙️  CPU       : ${cpuPercent}% (1 core, sampel 250 ms)
+  ◈  ⏱️  Event-loop: ${eventLoopLag} ms (estimasi)
 
 ╭─────────────────────────────────────╮
 │  💻  *SYSTEM*                        │

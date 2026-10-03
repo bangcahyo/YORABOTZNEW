@@ -46,8 +46,68 @@ const menuDirectory = path.join(pluginRoot, 'menu');
 const menuPlugins = fs.readdirSync(menuDirectory)
   .filter(file => file.endsWith('.js'))
   .map(file => require(path.join(menuDirectory, file)));
+const loadedPlugins = [];
+
+for (const category of fs.readdirSync(pluginRoot)) {
+  const categoryPath = path.join(pluginRoot, category);
+  if (!fs.statSync(categoryPath).isDirectory()) continue;
+  for (const file of fs.readdirSync(categoryPath)) {
+    if (file.endsWith('.js')) loadedPlugins.push(require(path.join(categoryPath, file)));
+  }
+}
+
+const menuCategories = {
+  menugame: ['game'],
+  menufun: ['fun'],
+  menuekonomi: ['ekonomi'],
+  menulevel: ['level'],
+  menugroup: ['group'],
+  menutools: ['tools', 'sticker', 'download'],
+  menuowner: ['owner'],
+};
 
 const escapedPrefix = config.prefix.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+test('main menu greeting follows the configured timezone', async () => {
+  const menuPlugin = menuPlugins.find(plugin => plugin.name === 'menu');
+  const OriginalDate = global.Date;
+  const originalRandom = Math.random;
+  const fixedInstant = OriginalDate.parse('2026-10-03T16:30:00.000Z');
+  global.Date = class extends OriginalDate {
+    constructor(...args) {
+      super(...(args.length ? args : [fixedInstant]));
+    }
+    static now() { return fixedInstant; }
+  };
+  Math.random = () => 0.6;
+
+  try {
+    let response;
+    const testConfig = {
+      ...config,
+      autoBroadcast: { ...config.autoBroadcast, timezone: 'Asia/Jakarta' },
+      sendMenuAs: 'text',
+      menuImageUrl: '',
+      voiceMenuUrl: '',
+    };
+    await menuPlugin.execute({
+      sendMessage: async (_jid, message) => { response = message.text; },
+    }, {}, [], {
+      config: testConfig,
+      from: 'test@g.us',
+      user: { limit: 20, money: 1000, point: 0, exp: 0, registered: true },
+      pushName: 'Pengguna',
+      isSenderOwner: () => false,
+      isPremium: () => false,
+      loadDB: () => ({}),
+    });
+
+    assert.ok(response.includes('Selamat malam'));
+  } finally {
+    global.Date = OriginalDate;
+    Math.random = originalRandom;
+  }
+});
 
 test('all menu pages render cleanly and list only registered commands', async () => {
   const testConfig = { ...config, sendMenuAs: 'text', menuImageUrl: '', voiceMenuUrl: '' };
@@ -68,12 +128,21 @@ test('all menu pages render cleanly and list only registered commands', async ()
       isPremium: () => false,
       isGroup: () => true,
       loadDB: () => ({}),
+      pluginList: loadedPlugins,
     };
 
     await plugin.execute(sock, {}, [], ctx);
 
     assert.equal(typeof response, 'string', `${plugin.name} should send text`);
     assert.ok(!response.includes('\uFFFD'), `${plugin.name} contains a broken replacement character`);
+    if (plugin.name === 'menu') assert.ok(response.includes(`${config.prefix}sc`), 'main menu should list .sc');
+    for (const category of menuCategories[plugin.name] || []) {
+      for (const command of loadedPlugins.filter(item => item.category === category)) {
+        const names = [command.name, ...(command.aliases || [])];
+        assert.ok(names.some(name => response.includes(`\`${config.prefix}${name}\``)),
+          `${plugin.name} should list ${command.name}`);
+      }
+    }
     const listedCommands = [...response.matchAll(new RegExp(`(?:^|\\s)${escapedPrefix}([a-z][a-z0-9_-]*)`, 'gim'))]
       .map(match => match[1].toLowerCase());
     const unknownCommands = [...new Set(listedCommands.filter(name => !commandNames.has(name)))];
@@ -131,7 +200,11 @@ test('main menu sends its image before voice-note processing finishes', async ()
       headers: { 'content-type': 'audio/wav', 'content-length': String(audio.length) },
     }));
     await execution;
-    assert.ok(sentMessages.some(message => message.audio && message.ptt));
+    if (hasFfmpeg) {
+      assert.ok(sentMessages.some(message => message.audio && message.ptt));
+    } else {
+      assert.ok(sentMessages.some(message => message.text?.includes('audio gagal dikirim')));
+    }
   } finally {
     if (finishFetch) {
       finishFetch(new Response(audio, {
@@ -156,14 +229,15 @@ test('shared menu layout separates the title, sections, and footer consistently'
   });
   const lines = rendered.split('\n');
 
-  assert.equal(lines[0], '✦━━━━━━━━━━━━━━━━━━━━✦');
-  assert.equal(lines[1], '      ✨ *YORA BOTZ* ✨');
-  assert.equal(lines[2], '        *MENU UJI*');
+  assert.equal(lines[0], '╭━━━━━━━━━━━━━━━━━━━━━━╮');
+  assert.equal(lines[1], '│  ✨ *YORA BOTZ* ✨');
+  assert.equal(lines[2], '│  _MENU UJI_');
+  assert.equal(lines[3], '╰━━━━━━━━━━━━━━━━━━━━━━╯');
   assert.ok(lines.indexOf('╭─ 📚 *KATEGORI PERTAMA*') < lines.indexOf('╭─ ⚙️ *KATEGORI KEDUA*'));
-  assert.ok(lines.some(line => line.includes('╰ `!menu`')));
+  assert.ok(lines.some(line => line.includes('└ `!menu`')));
   assert.ok(lines.some(line => line.includes('├ `!ping`')));
-  assert.ok(lines.includes('✦━━━━━━━━━━━━━━━━━━━━✦'));
-  assert.ok(lines.includes('🅟 = Premium'));
+  assert.ok(lines.includes('╭─ ✨ *KETERANGAN*'));
+  assert.ok(lines.some(line => line.includes('🅟 = Premium')));
 });
 
 test('menu command styling does not alter website or WhatsApp URLs', () => {
@@ -198,12 +272,42 @@ test('menu audio is converted to an OGG/Opus WhatsApp voice note', { skip: !hasF
   });
 
   try {
-    const result = await loadVoiceMessage('https://files.example/menu.wav');
+    const result = await loadVoiceMessage('https://files.example/menu-conversion-test.wav');
     assert.ok(Buffer.isBuffer(result.audio));
     assert.equal(result.audio.subarray(0, 4).toString(), 'OggS');
     assert.ok(result.audio.includes(Buffer.from('OpusHead')));
     assert.equal(result.mimetype, 'audio/ogg; codecs=opus');
     assert.equal(result.ptt, true);
+  } finally {
+    global.fetch = originalFetch;
+  }
+});
+
+test('menu OGG/Opus audio skips conversion and is cached', async () => {
+  const originalFetch = global.fetch;
+  const oggOpus = Buffer.from('OggS test OpusHead');
+  let fetchCount = 0;
+  global.fetch = async () => {
+    fetchCount++;
+    return new Response(oggOpus, {
+      status: 200,
+      headers: { 'content-type': 'audio/ogg', 'content-length': String(oggOpus.length) },
+    });
+  };
+
+  try {
+    const url = 'https://files.example/menu-cache-test.ogg';
+    const [first, second] = await Promise.all([
+      loadVoiceMessage(url),
+      loadVoiceMessage(url),
+    ]);
+    const cached = await loadVoiceMessage(url);
+
+    assert.equal(fetchCount, 1);
+    assert.ok(first.audio.equals(oggOpus));
+    assert.strictEqual(first, second);
+    assert.strictEqual(second, cached);
+    assert.equal(first.ptt, true);
   } finally {
     global.fetch = originalFetch;
   }

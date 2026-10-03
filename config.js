@@ -108,6 +108,14 @@ module.exports = {
     catchUpHours: 1,      // toleransi telat (jam) jika bot baru nyala setelah jadwal
   },
 
+  databaseBackup: {
+    enabled: true,
+    intervalHours: 24,
+    retentionCount: 7,
+    notifyOnFailure: true,
+    failureAlertCooldownHours: 24,
+  },
+
   waktuPesan: {
     pagi: {
       jam: 6,
@@ -136,7 +144,7 @@ module.exports = {
   // ═══════════════════════════════════════════════════════
   officialGroup: {
     name: 'Grup Resmi Yora Botz',
-    link: 'https://chat.whatsapp.com/K97NhtfCxoV90vJ2ub419I?s=cl&p=a&mlu=4&ilr=4',
+    link: 'https://shorturl.at/S9mbO',
     desc: 'Grup diskusi, info update, & bantuan bot',
   },
 
@@ -159,6 +167,13 @@ module.exports = {
   // ═══════════════════════════════════════════════════════
   //                    OWNER ALERTS
   // ═══════════════════════════════════════════════════════
+  storageMonitor: {
+    enabled: true,
+    thresholdPercent: 15,
+    checkIntervalMs: 30 * 60 * 1000,
+    cooldownMs: 24 * 60 * 60 * 1000,
+  },
+
   ownerAlerts: {
     enabled: true,
     onModeChange: true,

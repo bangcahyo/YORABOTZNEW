@@ -5,11 +5,13 @@ module.exports = {
   category: 'menu',
   aliases: ['menugames'],
   async execute(sock, msg, args, ctx) {
-    const { config, from, formatMoney } = ctx;
+    const { config, from, formatMoney, pluginList } = ctx;
     const menuText = renderMenu({
       botName: config.botName,
       title: 'PERMAINAN',
       prefix: config.prefix,
+      pluginList,
+      includeCategories: ['game'],
       sections: [
         {
           icon: '🎰',

@@ -1,6 +1,6 @@
 {
   "name": "yora-botz",
-  "version": "7.2.1",
+  "version": "7.3.0",
   "description": "Yora Botz - Premium WhatsApp Bot Multi-Fitur",
   "main": "index.js",
   "scripts": {
@@ -15,7 +15,8 @@
     "@hapi/boom": "^10.0.1",
     "@whiskeysockets/baileys": "6.7.24",
     "form-data": "^4.0.6",
-    "pino": "^9.0.0",
+    "pino": "^10.4.0",
+    "qrcode": "^1.5.4",
     "sharp": "^0.35.5",
     "wa-sticker-formatter": "^4.4.4"
   },

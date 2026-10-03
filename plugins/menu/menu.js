@@ -2,8 +2,12 @@ const { loadVoiceMessage, renderMenu } = require('../../lib/menu-layout');
 
 const GREETINGS = ['✨ Halo', '🔥 Hai', '⚡ Salam', '💫 Apa kabar?', '👋 Halo'];
 
-function getTimeGreeting() {
-  const hour = new Date().getHours();
+function getTimeGreeting(timeZone) {
+  const hour = Number(new Intl.DateTimeFormat('en-US', {
+    timeZone,
+    hour: '2-digit',
+    hourCycle: 'h23',
+  }).format(new Date()));
   if (hour < 11) return '🌞 Selamat pagi';
   if (hour < 15) return '☀️ Selamat siang';
   if (hour < 18) return '🌤️ Selamat sore';
@@ -28,7 +32,7 @@ module.exports = {
     const prefix = config.prefix || '.';
     const greeting = Math.random() < 0.5
       ? GREETINGS[Math.floor(Math.random() * GREETINGS.length)]
-      : getTimeGreeting();
+      : getTimeGreeting(config.autoBroadcast?.timezone || 'Asia/Jakarta');
     const isOwner = Boolean(ctx.isSenderOwner && ctx.isSenderOwner());
     const isPremium = Boolean(ctx.isPremium && ctx.isPremium());
     const role = isOwner ? 'Owner' : isPremium ? 'Premium' : user.registered ? 'Anggota' : 'Belum terdaftar';
@@ -72,6 +76,8 @@ module.exports = {
           `${prefix}leaderboard — lihat peringkat`,
           `${prefix}premium — informasi Premium`,
           `${prefix}commands — daftar semua command`,
+          `${prefix}sc — informasi dan aturan script`,
+          `${prefix}perf — statistik durasi dan error command`,
           `${prefix}tutorial — panduan penggunaan`,
           `${prefix}ping — cek respons bot`,
         ],

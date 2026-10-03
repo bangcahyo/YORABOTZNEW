@@ -6,7 +6,7 @@
 
 **Bot WhatsApp Multi-Fitur dengan Pairing Code — Tanpa QR**
 
-[![Version](https://img.shields.io/badge/v7.2.1-blue?style=flat-square)](https://github.com/bangcahyo/YoraBotz)
+[![Version](https://img.shields.io/badge/v7.3.0-blue?style=flat-square)](https://github.com/bangcahyo/YoraBotz)
 [![Node](https://img.shields.io/badge/node-%3E%3D20.18.1-green?style=flat-square)](https://nodejs.org/)
 [![Baileys](https://img.shields.io/badge/baileys-6.7.24-purple?style=flat-square)](https://github.com/WhiskeySockets/Baileys)
 [![License](https://img.shields.io/badge/license-restricted-red?style=flat-square)](LICENSE)
@@ -108,6 +108,19 @@ Fitur yang memakai limit ditandai dengan **🅛**. Setiap command punya biaya be
 ```
 
 ---
+
+## 🆕 Changelog v7.3.0
+
+### Fitur baru
+- **Command grup**: `.poll` membuat polling native WhatsApp dengan 2–12 opsi.
+- **QR lokal**: `.qr` membuat gambar QR tanpa API key.
+- **Hiburan**: `.ship` menampilkan kecocokan nama secara deterministik.
+- **Operasional**: `.perf`, `.storage`, dan `.cleanup` untuk pemantauan dan pengelolaan aman.
+- **Backup**: snapshot database otomatis harian, retensi tujuh salinan, status, verifikasi, dan pengiriman backup terbaru.
+- **Menu kategori** otomatis menampilkan command aktif yang belum tercantum.
+
+### Dependency
+- Pino diperbarui ke 10.4.0; Baileys tetap pada 6.7.24 stabil.
 
 ## 🆕 Changelog v7.2.1
 
@@ -235,6 +248,11 @@ mkdir -p database session assets
 ```bash
 npm install
 ```
+
+Jika `sendMenuAs` di `config.js` memakai `voice` atau `both` dan `voiceMenuUrl` diisi,
+pasang FFmpeg di server agar audio dapat dikonversi menjadi voice note WhatsApp
+(contoh Debian/Ubuntu: `sudo apt install ffmpeg`). Tanpa FFmpeg, menu tetap terkirim,
+tetapi bot akan memberi tahu bahwa audio gagal dikirim.
 
 ### 4. Konfigurasi Bot
 
@@ -606,6 +624,7 @@ pm2 startup
 | Masalah | Solusi |
 |---------|--------|
 | `Cannot find module` | Jalankan `npm install` |
+| `FFmpeg tidak dapat dijalankan` saat menu | Pasang FFmpeg jika menu memakai audio voice |
 | Pairing code tidak muncul | Hapus `session/`, tunggu 5 menit, restart |
 | `Connection Closed` | Tunggu 1-2 jam (rate limit), coba lagi |
 | Owner tidak dikenali | Pakai nomor format `62xxx` di `config.js` |
@@ -634,21 +653,21 @@ rm -rf session
 
 ```
 ╔══════════════════════════════════╗
-║   📦 YORA BOTZ v7.2.1            ║
+║   📦 YORA BOTZ v7.3.0            ║
 ╚══════════════════════════════════╝
   📁 Menu       : 8 plugin
   📁 Game       : 40 plugin
   📁 Ekonomi    : 12 plugin
   📁 Level      : 5 plugin
-  📁 Group      : 13 plugin
-  📁 Tools      : 13 plugin
+  📁 Group      : 14 plugin
+  📁 Tools      : 14 plugin
   📁 Download   : 4 plugin
-  📁 Fun        : 19 plugin
-  📁 Info       : 10 plugin
+  📁 Fun        : 20 plugin
+  📁 Info       : 12 plugin
   📁 Sticker    : 3 plugin
-  📁 Owner      : 38 plugin
+  📁 Owner      : 40 plugin
   ───────────────────────────────
-  📊 Total      : 165 plugin
+  📊 Total      : 172 plugin
   🚀 Fitur      : 165 plugin command
   🅟 Premium    : aktif
   🅛 Limit      : aktif

@@ -1,5 +1,5 @@
 // ============================================================
-//   YORA BOTZ v7.2.1
+//   YORA BOTZ v7.3.0
 //   Owner: Cahyo Store (08139525985)
 // ============================================================
 
@@ -25,6 +25,9 @@ const premiumLib = require('./lib/premium');
 const { getCommandPolicy } = require('./lib/command-policy');
 const { requiresRegister, sendRegisterRequired } = require('./lib/gate');
 const { notifyOwner } = require('./lib/owner-notification');
+const performanceStats = require('./lib/performance-stats');
+const { startStorageMonitor, stopStorageMonitor } = require('./lib/storage-monitor');
+const { startDatabaseBackup, stopDatabaseBackup } = require('./lib/database-backup');
 
 const getUser = database.getUser;
 const updateUser = database.updateUser;
@@ -95,15 +98,16 @@ const noLimitCommands = [
   'menu', 'help', 'menugame', 'menugames', 'menufun', 'menuhiburan',
   'menuekonomi', 'menueco', 'menulevel', 'menugroup', 'menuadmin',
   'menuowner', 'menuown', 'menutools', 'menudownload', 'menu',
-  'runtime', 'uptime', 'rt', 'profile', 'profil',
+  'runtime', 'uptime', 'rt', 'perf', 'performance', 'cleanup', 'clearcache', 'storage', 'diskusage', 'profile', 'profil',
   'owner', 'ownerku', 'own', 'info', 'botinfo',
   'mode', 'botmode', 'self', 'public', 'ping',
-  'tqto', 'thanks', 'credit', 'fitur', 'features', 'commands',
+  'tqto', 'thanks', 'credit', 'sc', 'fitur', 'features', 'commands',
   'daftar', 'register', 'reg',
   'limit', 'point', 'uang', 'money', 'daily', 'shop',
   'level', 'lvl', 'rank', 'peringkat', 'leaderboard', 'lb', 'top',
   'antilink', 'antispam', 'unmute', 'welcome', 'setwelcome', 'setgoodbye',
   'kick', 'promote', 'demote', 'tagall', 'groupinfo',
+  'poll',
   'id', 'groupid', 'cekid',
   'addlimit', 'addmoney', 'addpoint', 'setlimit', 'setmoney', 'resetuser',
   'broadcast', 'backup', 'backupdb', 'restore', 'restoredb', 'restoreyes', 'restoreno',
@@ -390,6 +394,8 @@ async function startBot() {
     if (connection === 'close') {
       // hentikan scheduler lama; akan dinyalakan lagi dengan socket baru saat 'open'
       try { require('./lib/autobroadcast').stopAutoBroadcast(); } catch (e) {}
+      stopStorageMonitor();
+      stopDatabaseBackup();
       const code = new Boom(lastDisconnect?.error)?.output?.statusCode;
       if (code === DisconnectReason.loggedOut) {
         const sp = path.join(__dirname, config.sessionName);
@@ -420,6 +426,8 @@ async function startBot() {
       } catch (e) {
         console.log('⚠️ Auto broadcast tidak aktif: ' + e.message);
       }
+      startStorageMonitor(sock, config);
+      startDatabaseBackup({ sock, config, botName: config.botName, flushDatabase: database.flushDatabase });
     }
   });
 
@@ -791,8 +799,11 @@ async function startBot() {
 
       // EXECUTE
       const ctx = buildContext(sock, msg, args);
+      const executionStartedAt = process.hrtime.bigint();
+      let executionSucceeded = false;
       try {
         await plugin.execute(sock, msg, args, ctx);
+        executionSucceeded = true;
         if (plugin.name !== 'commandstats' && plugin.name !== 'activitylog') {
           try {
             database.recordCommandUsage(plugin.name);
@@ -811,6 +822,9 @@ async function startBot() {
         }
       } catch (err) {
         console.error('❌ Error plugin "' + plugin.name + '": ' + err.message);
+      } finally {
+        const durationMs = Number(process.hrtime.bigint() - executionStartedAt) / 1e6;
+        performanceStats.recordPlugin(plugin, durationMs, executionSucceeded);
       }
 
     } catch (err) {

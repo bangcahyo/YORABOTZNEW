@@ -6,7 +6,7 @@ module.exports = {
   category: 'menu',
   aliases: ['menueco'],
   async execute(sock, msg, args, ctx) {
-    const { config, from, formatMoney } = ctx;
+    const { config, from, formatMoney, pluginList } = ctx;
     const premium = config.premium || {};
     const standardItems = getShopItems(config, false);
     const premiumPrices = new Map(getShopItems(config, true).map(item => [item.key, item.finalPrice]));
@@ -15,6 +15,8 @@ module.exports = {
       botName: config.botName,
       title: 'EKONOMI & TOKO',
       prefix: config.prefix,
+      pluginList,
+      includeCategories: ['ekonomi'],
       sections: [
         {
           icon: '👤',

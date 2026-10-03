@@ -4,11 +4,13 @@ module.exports = {
   name: 'menulevel',
   category: 'menu',
   async execute(sock, msg, args, ctx) {
-    const { config, from, formatMoney } = ctx;
+    const { config, from, formatMoney, pluginList } = ctx;
     const menuText = renderMenu({
       botName: config.botName,
       title: 'LEVEL & PERINGKAT',
       prefix: config.prefix,
+      pluginList,
+      includeCategories: ['level'],
       sections: [
         { icon: '📊', title: 'COMMAND LEVEL', items: [`${config.prefix}level — lihat level dan EXP`, `${config.prefix}rank — lihat peringkatmu`, `${config.prefix}leaderboard — lihat daftar peringkat`] },
         {
