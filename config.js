@@ -88,8 +88,8 @@ module.exports = {
   // ═══════════════════════════════════════════════════════
   //                    MEDIA URL
   // ═══════════════════════════════════════════════════════
-  menuImageUrl: '',
-  voiceMenuUrl: '',
+  menuImageUrl: 'https://files.catbox.moe/m83n8z.png',
+  voiceMenuUrl: 'https://files.catbox.moe/6yaewc.mp3',
   voiceOwnerUrl: '',
   sendMenuAs: 'both',
   sendOwnerAs: 'both',

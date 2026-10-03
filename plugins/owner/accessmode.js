@@ -5,7 +5,7 @@ module.exports = {
   category: 'owner',
   aliases: ['access', 'botaccess', 'modeaccess'],
   async execute(sock, msg, args, ctx) {
-    const { from, isSenderOwner } = ctx;
+    const { from, isSenderOwner, senderNumber } = ctx;
     if (!isSenderOwner || !isSenderOwner()) {
       return sock.sendMessage(from, { text: '❌ Hanya owner yang bisa mengubah akses bot.' }, { quoted: msg });
     }
@@ -15,7 +15,7 @@ module.exports = {
     if (mode === 'self' || mode === 'private') {
       config.botMode = 'self';
       if (config.ownerAlerts?.enabled !== false && config.ownerAlerts?.onModeChange !== false && ctx.notifyOwner) {
-        ctx.notifyOwner('🔒 *MODE BOT DIUBAH*\n\nStatus baru: *SELF*\nDiubah oleh: *' + senderNumber + '*');
+        void ctx.notifyOwner('🔒 *MODE BOT DIUBAH*\n\nStatus baru: *SELF*\nDiubah oleh: *' + senderNumber + '*');
       }
       return sock.sendMessage(from, { text: '🏠 *ACCESS MODE: SELF*\n\nBot hanya merespon owner.' }, { quoted: msg });
     }
@@ -23,7 +23,7 @@ module.exports = {
     if (mode === 'public' || mode === 'all' || mode === 'global') {
       config.botMode = 'public';
       if (config.ownerAlerts?.enabled !== false && config.ownerAlerts?.onModeChange !== false && ctx.notifyOwner) {
-        ctx.notifyOwner('🔓 *MODE BOT DIUBAH*\n\nStatus baru: *PUBLIC*\nDiubah oleh: *' + senderNumber + '*');
+        void ctx.notifyOwner('🔓 *MODE BOT DIUBAH*\n\nStatus baru: *PUBLIC*\nDiubah oleh: *' + senderNumber + '*');
       }
       return sock.sendMessage(from, { text: '🌐 *ACCESS MODE: PUBLIC*\n\nBot merespon semua user.' }, { quoted: msg });
     }

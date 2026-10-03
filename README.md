@@ -116,7 +116,7 @@ Fitur yang memakai limit ditandai dengan **🅛**. Setiap command punya biaya be
   - TikTok → tikwm.com (video & slideshow foto)
   - YouTube → `@distube/ytdl-core` (video maks 720p, audio m4a, durasi maks 15 menit)
   - Instagram → halaman embed publik (post / reel publik)
-  - Opsional: pasang [`yt-dlp`](https://github.com/yt-dlp/yt-dlp) di server (atau set env `YTDLP_PATH`) → otomatis dipakai sebagai cadangan jika metode utama gagal.
+  - Opsional: pasang [`yt-dlp`](https://github.com/yt-dlp/yt-dlp) dan FFmpeg di server (atau set env `YTDLP_PATH`) → otomatis dipakai sebagai cadangan jika metode utama gagal. FFmpeg diperlukan untuk menggabungkan video dan audio YouTube; runtime Node digunakan yt-dlp untuk ekstraksi YouTube.
 - Dependency baru: `@distube/ytdl-core`. Jalankan `npm install` setelah update.
 
 ### 📢 Auto Broadcast Diperbaiki
@@ -330,7 +330,7 @@ yora-botz/
 .tiktok <url>     → Download TikTok   🅛🅟
 .instagram <url>  → Download IG       🅛🅟
 ```
-_Semua downloader berjalan **tanpa API key**. Opsional: pasang `yt-dlp` di server sebagai cadangan._
+_Semua downloader berjalan **tanpa API key**. Pasang `yt-dlp` dan FFmpeg di server sebagai fallback; FFmpeg diperlukan untuk menggabungkan stream video dan audio._
 
 ### 🧠 Premium AI Assistant
 ```

@@ -1,49 +1,26 @@
+const { renderMenu } = require('../../lib/menu-layout');
+
 module.exports = {
   name: 'menutools',
   category: 'menu',
   aliases: ['menutool'],
   async execute(sock, msg, args, ctx) {
     const { config, from } = ctx;
-
-    const menuText = `╔══════════════════════════════════╗
-║      🛠️ *MENU TOOLS*
-╚══════════════════════════════════╝
-
-🎨 *STICKER*
-${config.prefix}sticker (reply gambar)
-${config.prefix}toimg (reply sticker)
-${config.prefix}emojimix <emoji>+<emoji>
-
-📤 *UPLOAD*
-${config.prefix}tourl (reply media)
-
-📥 *DOWNLOAD* 🅟
-${config.prefix}youtube <url>
-${config.prefix}ytmp3 <url>
-${config.prefix}tiktok <url>
-${config.prefix}instagram <url>
-
-📖 *INFO*
-${config.prefix}wiki <topik>
-${config.prefix}cuaca <kota>
-${config.prefix}jam
-${config.prefix}statusbot
-
-🧠 *PREMIUM AI ASSISTANT*
-${config.prefix}ai <pertanyaan>
-${config.prefix}ask <pertanyaan>
-
-⚙️ *UTILITY*
-${config.prefix}bmi <berat> <tinggi>
-${config.prefix}acakangka <min> <max>
-${config.prefix}reminder <5m> <teks>
-${config.prefix}translate <kata>
-${config.prefix}cekpasangan <nama1> + <nama2>
-
-🔮 *RAMALAN*
-${config.prefix}jodoh @user
-${config.prefix}sifat <nama>`;
-
-    await sock.sendMessage(from, { text: menuText });
+    const menuText = renderMenu({
+      botName: config.botName,
+      title: 'ALAT & UTILITAS',
+      prefix: config.prefix,
+      sections: [
+        { icon: '🎨', title: 'STIKER', items: [`${config.prefix}sticker (balas gambar/video)`, `${config.prefix}toimg (balas stiker)`, `🅟 ${config.prefix}emojimix 😀+🔥`] },
+        { icon: '📤', title: 'UNGGAH MEDIA', items: [`🅟 ${config.prefix}tourl (balas media)`] },
+        { icon: '📥', title: 'UNDUH MEDIA', items: [`${config.prefix}youtube <tautan>`, `${config.prefix}ytmp3 <tautan>`, `${config.prefix}tiktok <tautan>`, `${config.prefix}instagram <tautan>`] },
+        { icon: '📖', title: 'INFORMASI', items: [`${config.prefix}wiki <topik>`, `${config.prefix}cuaca <kota>`, `${config.prefix}jam`, `${config.prefix}statusbot`] },
+        { icon: '🧠', title: 'ASISTEN AI PREMIUM', items: [`${config.prefix}ai <pertanyaan>`, `${config.prefix}ask <pertanyaan>`] },
+        { icon: '⚙️', title: 'UTILITAS', items: [`${config.prefix}bmi <berat> <tinggi>`, `${config.prefix}acakangka <minimum> <maksimum>`, `${config.prefix}reminder <5m> <pesan>`, `${config.prefix}translate <teks>`, `${config.prefix}cekpasangan <nama1> + <nama2>`] },
+        { icon: '🔮', title: 'RAMALAN', items: [`${config.prefix}jodoh @user`, `${config.prefix}sifat <nama>`] },
+      ],
+      footer: ['🅟 = Fitur Premium · 🅛 = Menggunakan limit'],
+    });
+    await sock.sendMessage(from, { text: menuText }, { quoted: msg });
   },
 };

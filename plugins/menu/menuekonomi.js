@@ -1,75 +1,70 @@
+const { getShopItems } = require('../../lib/shop');
+const { renderMenu } = require('../../lib/menu-layout');
+
 module.exports = {
   name: 'menuekonomi',
   category: 'menu',
   aliases: ['menueco'],
   async execute(sock, msg, args, ctx) {
     const { config, from, formatMoney } = ctx;
-    const P = config.premium || {};
+    const premium = config.premium || {};
+    const standardItems = getShopItems(config, false);
+    const premiumPrices = new Map(getShopItems(config, true).map(item => [item.key, item.finalPrice]));
 
-    const menuText = `╔══════════════════════════════════════╗
-║        💰  *EKONOMI MENU*  💰
-╚══════════════════════════════════════╝
+    const menuText = renderMenu({
+      botName: config.botName,
+      title: 'EKONOMI & TOKO',
+      prefix: config.prefix,
+      sections: [
+        {
+          icon: '👤',
+          title: 'AKUN & PROFIL',
+          items: [
+            `${config.prefix}daftar <nama> — daftar akun`,
+            `${config.prefix}profile — lihat profil`,
+            `${config.prefix}limit — cek sisa limit`,
+            `${config.prefix}limit info — info penggunaan limit`,
+            `${config.prefix}point — cek poin`,
+            `${config.prefix}uang — cek saldo`,
+          ],
+        },
+        {
+          icon: '💎',
+          title: 'PREMIUM',
+          items: [
+            `${config.prefix}premium — info dan status Premium`,
+            `${config.prefix}premium buy — beli Premium`,
+            `${config.prefix}premium cek — cek masa aktif`,
+            `${config.prefix}premiumcard — kartu profil`,
+            `${config.prefix}briefing — ringkasan akun`,
+            `Harga: *${formatMoney(premium.price || 50000)}* · Masa aktif: *${premium.durationDays || 30} hari*`,
+            `Limit harian: *${premium.dailyLimit || 100}* · Diskon toko: *${premium.shopDiscount || 20}%*`,
+            `Bonus harian: *${premium.dailyMoneyMultiplier || 2}× uang* · EXP: *${premium.expMultiplier || 2}×*`,
+          ],
+        },
+        {
+          icon: '🎁',
+          title: 'HADIAH & TRANSFER',
+          items: [
+            `${config.prefix}daily — klaim hadiah harian`,
+            `${config.prefix}transfer @user <jumlah> — kirim uang`,
+          ],
+        },
+        {
+          icon: '🛒',
+          title: 'TOKO',
+          items: [
+            `${config.prefix}shop — lihat produk dan harga`,
+            `${config.prefix}buy <item> — beli produk`,
+            ...standardItems.map(item =>
+              `${item.name}: ${formatMoney(item.price)} · Premium: ${formatMoney(premiumPrices.get(item.key))}`,
+            ),
+          ],
+        },
+      ],
+      footer: ['🅟 = Fitur Premium · 🅛 = Menggunakan limit'],
+    });
 
-╭─────────────────────────────────────╮
-│  👤  *PROFIL & REGISTRASI*           │
-╰─────────────────────────────────────╯
-
-  ◈  📝  ${config.prefix}daftar <nama>
-  ◈  👤  ${config.prefix}profile
-  ◈  🅛  ${config.prefix}limit
-  ◈  🅛  ${config.prefix}limit info
-  ◈  ⭐  ${config.prefix}point
-  ◈  💰  ${config.prefix}uang
-
-╭─────────────────────────────────────╮
-│  🅟  *PREMIUM*                       │
-╰─────────────────────────────────────╯
-
-  ◈  🪪  ${config.prefix}premiumcard
-  ◈  ✨  ${config.prefix}briefing
-  ◈  🅟  ${config.prefix}premium
-  ◈  💎  ${config.prefix}premium buy
-  ◈  🔍  ${config.prefix}premium cek
-  ◈  🚀  ${config.prefix}premium info
-
-  💵 Harga  : *${formatMoney(P.price || 50000)}*
-  ⏳ Durasi : *${P.durationDays || 30} hari*
-  🅛 Limit  : *${P.dailyLimit || 100}* (free: ${config.defaultLimit})
-  💰 Bonus  : *${P.dailyMoneyMultiplier || 2}x* uang dari daily & *${P.expMultiplier || 2}x* EXP
-
-  ➤ Upgrade sekarang untuk fitur lebih lengkap dan limit lebih besar.
-
-╭─────────────────────────────────────╮
-│  🎁  *REWARD*                        │
-╰─────────────────────────────────────╯
-
-  ◈  🎁  ${config.prefix}daily (streak & milestone)
-  ◈  💸  ${config.prefix}transfer @user <jml>
-
-╭─────────────────────────────────────╮
-│  🛒  *SHOP*                          │
-╰─────────────────────────────────────╯
-
-  ◈  🛒  ${config.prefix}shop
-  ◈  🛍️  ${config.prefix}buy <item>
-
-  💎 Diskon premium: *${P.shopDiscount || 20}%* 🅟
-
-╭─────────────────────────────────────╮
-│  💎  *ITEM SHOP*                     │
-╰─────────────────────────────────────╯
-
-  ◆  👑  VIP           — ${formatMoney(50000)}
-  ◆  🅛  Limit Boost   — ${formatMoney(10000)}
-  ◆  💰  Money Boost   — ${formatMoney(15000)}
-  ◆  ⭐  Point Boost   — ${formatMoney(20000)}
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  🅟 = Fitur Premium   🅛 = Pakai Limit
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  ⚡  _${config.botName} — Economy Menu_
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`;
-
-    await sock.sendMessage(from, { text: menuText });
+    await sock.sendMessage(from, { text: menuText }, { quoted: msg });
   },
 };

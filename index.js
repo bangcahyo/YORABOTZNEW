@@ -23,6 +23,7 @@ const helper = require('./lib/helper');
 const level = require('./lib/level');
 const premiumLib = require('./lib/premium');
 const { getCommandPolicy } = require('./lib/command-policy');
+const { notifyOwner } = require('./lib/owner-notification');
 
 const getUser = database.getUser;
 const updateUser = database.updateUser;
@@ -123,6 +124,9 @@ function loadPlugins() {
     console.log('⚠️ Folder plugins tidak ada');
     return { loaded: pluginList.length, failed: 1, applied: false };
   }
+
+  const menuLayoutPath = require.resolve(path.join(__dirname, 'lib', 'menu-layout.js'));
+  delete require.cache[menuLayoutPath];
 
   const cats = fs.readdirSync(dir).sort().filter(function(f) {
     return fs.statSync(path.join(dir, f)).isDirectory();
@@ -234,19 +238,6 @@ function findClosestCommand(input) {
 }
 
 // ============ BUILD CONTEXT ============
-function notifyOwner(sock, text) {
-  try {
-    if (config.ownerAlerts?.enabled === false) return false;
-    const ownerJid = (config.ownerNumber || '').replace(/[^0-9]/g, '') + '@s.whatsapp.net';
-    if (!ownerJid || ownerJid === '@s.whatsapp.net') return false;
-    sock.sendMessage(ownerJid, { text: text });
-    return true;
-  } catch (err) {
-    console.error('❌ notifyOwner error: ' + err.message);
-    return false;
-  }
-}
-
 function buildContext(sock, msg, args) {
   const from = msg.key.remoteJid;
   const sender = msg.key.participantAlt || msg.key.participant || msg.key.remoteJidAlt || msg.key.remoteJid;
@@ -281,7 +272,7 @@ function buildContext(sock, msg, args) {
     pushActivity: database.pushActivity,
     clearActivityLog: database.clearActivityLog,
     notifyOwner: function(text) {
-      return notifyOwner(sock, text);
+      return notifyOwner(sock, config, text);
     },
     loadGroups: loadGroups,
     saveGroups: saveGroups,
@@ -800,16 +791,16 @@ async function startBot() {
             text: text || command,
             success: false,
           });
-          if (config.ownerAlerts?.enabled !== false && config.ownerAlerts?.onUnknownCommand !== false) {
-            notifyOwner(sock, '⚠️ Command tidak dikenal diterima\n' +
-              'Command: *' + command + '*\n' +
-              'Pengguna: *' + senderNumber + '*\n' +
-              'Grup/Chat: *' + from + '*');
-          }
         } catch (err) {
           console.error('❌ Gagal menyimpan log command tidak dikenal: ' + err.message);
         }
         await sock.sendMessage(from, { text: helpText }, { quoted: msg });
+        if (config.ownerAlerts?.enabled !== false && config.ownerAlerts?.onUnknownCommand !== false) {
+          void notifyOwner(sock, config, '⚠️ Command tidak dikenal diterima\n' +
+            'Command: *' + command + '*\n' +
+            'Pengguna: *' + senderNumber + '*\n' +
+            'Grup/Chat: *' + from + '*');
+        }
         return;
       }
 

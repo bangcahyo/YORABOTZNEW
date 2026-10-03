@@ -22,7 +22,9 @@ module.exports = {
     }
 
     if (sub === 'test') {
-      const ok = ctx.notifyOwner ? ctx.notifyOwner('🧪 *TEST OWNER ALERT*\n\nNotifikasi berhasil dikirim dari bot.') : false;
+      const ok = ctx.notifyOwner
+        ? await ctx.notifyOwner('🧪 *TEST OWNER ALERT*\n\nNotifikasi berhasil dikirim dari bot.')
+        : false;
       return sock.sendMessage(from, { text: ok ? '✅ Test notifikasi berhasil dikirim ke owner.' : '⚠️ Tidak dapat mengirim test notifikasi.' }, { quoted: msg });
     }
 
