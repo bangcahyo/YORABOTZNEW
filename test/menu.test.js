@@ -114,6 +114,40 @@ test('photo enhancement commands stay split between sharp and ai paths', () => {
   assert.ok(names.includes('hda') || names.includes('hdai'), 'separate AI-enhancement command should be available');
 });
 
+test('all menu groups commands by category and hides owner commands from regular users', async () => {
+  const menuAllPlugin = menuPlugins.find(plugin => plugin.name === 'menuall');
+  assert.ok(menuAllPlugin.aliases.includes('allmenu'));
+  const pluginList = [
+    { name: 'zeta', category: 'tools' },
+    { name: 'secret', category: 'owner' },
+    { name: 'beta', category: 'game' },
+    { name: 'alpha', category: 'game' },
+  ];
+  const testConfig = { ...config, sendMenuAs: 'text', menuImageUrl: '', voiceMenuUrl: '' };
+  const renderForRole = async isOwner => {
+    let response;
+    await menuAllPlugin.execute({
+      sendMessage: async (_jid, message) => { response = message.text; },
+    }, {}, [], {
+      config: testConfig,
+      from: 'test@g.us',
+      pluginList,
+      isSenderOwner: () => isOwner,
+    });
+    return response;
+  };
+
+  const memberMenu = await renderForRole(false);
+  assert.ok(memberMenu.indexOf(`${config.prefix}alpha`) < memberMenu.indexOf(`${config.prefix}beta`));
+  assert.ok(memberMenu.includes(`${config.prefix}zeta`));
+  assert.ok(!memberMenu.includes(`${config.prefix}secret`));
+  assert.ok(memberMenu.includes('Total command: *3*'));
+
+  const ownerMenu = await renderForRole(true);
+  assert.ok(ownerMenu.includes(`${config.prefix}secret`));
+  assert.ok(ownerMenu.includes('Total command: *4*'));
+});
+
 test('all menu pages render cleanly and list only registered commands', async () => {
   const testConfig = { ...config, sendMenuAs: 'text', menuImageUrl: '', voiceMenuUrl: '' };
   for (const plugin of menuPlugins) {

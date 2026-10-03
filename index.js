@@ -98,7 +98,7 @@ function isPremiumCommand(command) {
 
 // Command yang TIDAK memotong limit (gratis / info / menu / owner)
 const noLimitCommands = [
-  'menu', 'help', 'start', 'menugame', 'menugames', 'menufun', 'menuhiburan',
+  'menu', 'help', 'start', 'menuall', 'allmenu', 'menugame', 'menugames', 'menufun', 'menuhiburan',
   'menuekonomi', 'menueco', 'menulevel', 'menugroup', 'menuadmin',
   'menuowner', 'menuown', 'menutools', 'menutool', 'menudownload', 'menudownloadmedia',
   'menumedia', 'menuislami', 'menuislam', 'menusticker', 'menuhd', 'menuupload',

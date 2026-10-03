@@ -83,6 +83,7 @@ module.exports = {
           `${prefix}leaderboard — lihat peringkat`,
           `${prefix}premium — informasi Premium`,
           `${prefix}commands — daftar semua command`,
+          `${prefix}menuall (${prefix}allmenu) — semua command per kategori`,
           `${prefix}sc — informasi dan aturan script`,
           `${prefix}perf — statistik durasi dan error command`,
           `${prefix}tutorial — panduan penggunaan`,
