@@ -14,7 +14,7 @@ module.exports = {
       includeCategories: ['tools', 'sticker', 'download'],
       sections: [
         { icon: '🎨', title: 'STIKER', items: [`${config.prefix}sticker (balas gambar/video)`, `${config.prefix}toimg (balas stiker)`, `🅟 ${config.prefix}emojimix 😀+🔥`] },
-        { icon: '✨', title: 'PENINGKATAN FOTO', items: [`${config.prefix}hd (balas foto untuk upscale dan mempertajam)`] },
+        { icon: '✨', title: 'PENINGKATAN FOTO & VIDEO', items: [`${config.prefix}hd (upscale foto cepat & sharp)`, `${config.prefix}hda (AI super-resolution foto; maksimal 512×512)`, `${config.prefix}hdvideo (upscale & sharpen video; maksimal 60 detik)`] },
         { icon: '📤', title: 'UNGGAH MEDIA', items: [`🅟 ${config.prefix}tourl (balas media)`] },
         { icon: '📥', title: 'UNDUH MEDIA', items: [`${config.prefix}youtube <tautan>`, `${config.prefix}ytmp3 <tautan>`, `${config.prefix}tiktok <tautan>`, `${config.prefix}instagram <tautan>`] },
         { icon: '🔳', title: 'QR CODE', items: [`${config.prefix}qr <teks atau tautan>`] },

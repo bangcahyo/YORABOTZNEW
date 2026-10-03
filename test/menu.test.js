@@ -109,6 +109,12 @@ test('main menu greeting follows the configured timezone', async () => {
   }
 });
 
+test('photo enhancement commands stay split between sharp and ai paths', () => {
+  const names = [...commandNames];
+  assert.ok(names.includes('hd'), 'regular sharp hd command should be available');
+  assert.ok(names.includes('hda') || names.includes('hdai'), 'separate AI-enhancement command should be available');
+});
+
 test('all menu pages render cleanly and list only registered commands', async () => {
   const testConfig = { ...config, sendMenuAs: 'text', menuImageUrl: '', voiceMenuUrl: '' };
   for (const plugin of menuPlugins) {

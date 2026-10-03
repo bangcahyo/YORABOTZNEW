@@ -1,21 +1,21 @@
 const sharp = require('sharp');
+const { upscaleWithAi, validateAiDimensions } = require('../../lib/ai-upscaler');
 
 const MAX_INPUT_BYTES = 20 * 1024 * 1024;
 const MAX_INPUT_PIXELS = 40_000_000;
 const MAX_OUTPUT_BYTES = 15 * 1024 * 1024;
-const MAX_DIMENSION = 2560;
 
 module.exports = {
-  name: 'hd',
+  name: 'hda',
   category: 'tools',
-  aliases: ['enhance'],
+  aliases: ['hdai', 'aihd', 'superhd'],
   async execute(sock, msg, args, ctx) {
     const { from, downloadMediaMessage } = ctx;
     const quoted = msg.message.extendedTextMessage?.contextInfo?.quotedMessage;
     const imageMessage = quoted?.imageMessage || msg.message.imageMessage;
     if (!imageMessage) {
       return sock.sendMessage(from, {
-        text: 'Balas foto dengan `.hd` untuk upscale dan mempertajam gambar.',
+        text: 'Balas foto dengan `.hda` untuk AI super-resolution yang terpisah dari `.hd` biasa.',
       }, { quoted: msg });
     }
 
@@ -42,34 +42,22 @@ module.exports = {
       if (!metadata.width || !metadata.height || !['jpeg', 'png', 'webp', 'tiff', 'gif'].includes(metadata.format)) {
         return sock.sendMessage(from, { text: '❌ Format foto tidak didukung.' }, { quoted: msg });
       }
-      let output;
-      let width;
-      let height;
-      let processingMode;
-      const scale = Math.min(2, MAX_DIMENSION / Math.max(metadata.width, metadata.height));
-      width = Math.max(1, Math.round(metadata.width * scale));
-      height = Math.max(1, Math.round(metadata.height * scale));
-      output = await image
-        .rotate()
-        .resize(width, height, { fit: 'inside' })
-        .sharpen({ sigma: 1.1 })
-        .flatten({ background: '#ffffff' })
-        .jpeg({ quality: 92, mozjpeg: true })
-        .toBuffer();
-      processingMode = 'Upscale Sharp x2';
 
-      if (output.length > MAX_OUTPUT_BYTES) {
+      validateAiDimensions(metadata.width, metadata.height);
+
+      const result = await upscaleWithAi(input);
+      if (result.buffer.length > MAX_OUTPUT_BYTES) {
         return sock.sendMessage(from, { text: '❌ Hasil foto melebihi batas kirim 15 MB.' }, { quoted: msg });
       }
 
       await sock.sendMessage(from, {
-        image: output,
+        image: result.buffer,
         mimetype: 'image/jpeg',
-        caption: `✅ Foto selesai diproses (${processingMode}): ${metadata.width}×${metadata.height} → ${width}×${height}.\n_Upscale dan penajaman lokal; detail yang tidak ada di foto asli tidak dapat dipulihkan._`,
+        caption: `✅ AI super-resolution selesai: ${metadata.width}×${metadata.height} → ${result.width}×${result.height}.\n_Mode AI ini dipisah dari `.hd` biasa agar proses Sharp tetap aman dan stabil._`,
       }, { quoted: msg });
     } catch (error) {
-      console.error('HD image processing error:', error.message);
-      await sock.sendMessage(from, { text: `❌ Gagal memproses foto: ${error.message}` }, { quoted: msg });
+      console.error('AI HD image processing error:', error.message);
+      await sock.sendMessage(from, { text: `❌ Gagal memproses foto AI: ${error.message}` }, { quoted: msg });
     }
   },
 };

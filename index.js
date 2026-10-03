@@ -29,6 +29,7 @@ const performanceStats = require('./lib/performance-stats');
 const { startStorageMonitor, stopStorageMonitor } = require('./lib/storage-monitor');
 const { startDatabaseBackup, stopDatabaseBackup } = require('./lib/database-backup');
 const { getBannedUser, shouldNotifyBannedUser } = require('./lib/user-ban');
+const { executeWithProcessingReaction } = require('./lib/processing-reaction');
 
 const getUser = database.getUser;
 const updateUser = database.updateUser;
@@ -825,7 +826,7 @@ async function startBot() {
       const executionStartedAt = process.hrtime.bigint();
       let executionSucceeded = false;
       try {
-        await plugin.execute(sock, msg, args, ctx);
+        await executeWithProcessingReaction(sock, from, msg, plugin, () => plugin.execute(sock, msg, args, ctx));
         executionSucceeded = true;
         if (plugin.name !== 'commandstats' && plugin.name !== 'activitylog') {
           try {
