@@ -9,7 +9,7 @@
     "postinstall": "patch-package"
   },
   "author": "Cahyo Store",
-  "license": "MIT",
+  "license": "SEE LICENSE IN LICENSE",
   "dependencies": {
     "@distube/ytdl-core": "^4.16.12",
     "@hapi/boom": "^10.0.1",

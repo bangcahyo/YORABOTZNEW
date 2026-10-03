@@ -9,11 +9,25 @@
 [![Version](https://img.shields.io/badge/v7.2.1-blue?style=flat-square)](https://github.com/bangcahyo/YoraBotz)
 [![Node](https://img.shields.io/badge/node-%3E%3D20.18.1-green?style=flat-square)](https://nodejs.org/)
 [![Baileys](https://img.shields.io/badge/baileys-6.7.24-purple?style=flat-square)](https://github.com/WhiskeySockets/Baileys)
-[![License](https://img.shields.io/badge/license-MIT-yellow?style=flat-square)](LICENSE)
+[![License](https://img.shields.io/badge/license-restricted-red?style=flat-square)](LICENSE)
 
 [🌐 Website](https://fityorastore.netlify.app/) • [💬 Grup](https://chat.whatsapp.com/K97NhtfCxoV90vJ2ub419I?s=cl&p=a&mlu=4&ilr=4) • [📞 Owner](https://wa.me/628139525985)
 
 </div>
+
+---
+
+## Lisensi dan penggunaan
+
+Yora Botz menggunakan lisensi khusus; bukan MIT. Penggunaan untuk operasi
+pribadi/non-komersial diperbolehkan sesuai ketentuan [LICENSE](LICENSE), tetapi
+penjualan, redistribusi, penghapusan atribusi, dan penggantian nama produk
+memerlukan izin tertulis dari Cahyo Store. Penyalinan atau distribusi tanpa
+izin dapat mengakibatkan pencabutan izin dan blacklist dari seluruh layanan,
+fitur, update, dukungan, serta kanal komunitas resmi Yora Botz. Bot akan
+menolak berjalan jika `botName` di `config.js` bukan `Yora Botz`. Pemeriksaan
+ini hanya memvalidasi nama konfigurasi dan tidak mendeteksi penyalinan atau
+penjualan salinan di luar bot.
 
 ---
 

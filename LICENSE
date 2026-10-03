@@ -1,16 +1,26 @@
-MIT License
+YORA BOTZ RESTRICTED LICENSE
 
-Copyright (c) 2026 Cahyo Store
+Copyright (c) 2026 Cahyo Store. All rights reserved.
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+This license applies only to Yora Botz code owned by Cahyo Store. Third-party
+components remain subject to their respective licenses.
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+You may use and modify this software for your own non-commercial operation.
+You may not, without prior written permission from the copyright holder:
+
+1. Sell, rent, sublicense, or otherwise commercially distribute this software
+   or a modified or unmodified copy of it.
+2. Rebrand the bot, change its displayed product name from "Yora Botz", remove
+   its copyright or license notices, or present it as another product.
+3. Copy for publication, upload, share, or redistribute the source code or
+   packaged software for other people without prior written permission.
+
+Permission requests must be obtained in writing from Cahyo Store.
+
+Unauthorized copying, redistribution, resale, or rebranding is a violation of
+this license. Cahyo Store reserves the right to revoke permission to use the
+software and blacklist the responsible person or deployment from all official
+Yora Botz services, features, updates, support, and community channels.
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,

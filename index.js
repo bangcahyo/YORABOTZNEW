@@ -317,6 +317,7 @@ function buildContext(sock, msg, args) {
 
 // ============ START BOT ============
 async function startBot() {
+  require('./lib/license-guard').assertProductName(config.botName);
   const { state, saveCreds } = await useMultiFileAuthState(config.sessionName);
   const { version } = await fetchLatestBaileysVersion();
 
