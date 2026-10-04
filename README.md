@@ -43,7 +43,7 @@ penjualan salinan di luar bot.
 | 📥 **Downloader** | YouTube, TikTok, Instagram (premium) |
 | 📚 **Wikipedia** | Cari artikel dari Wikipedia |
 | 🌤️ **Cuaca** | Info cuaca real-time |
-| 🎮 **40 Game** | Slot, dadu, tebak-tebakan, family100, dll |
+| 🎮 **40+ Game** | Slot, dadu, UNO, tebak-tebakan rebutan, family100, math soal cerita, dll |
 | 🎲 **19 Menu Fun** | Quote, pantun, puisi, gombalan, zodiak, dll |
 | 🧰 **Utility Tools** | Jam, BMI, reminder, translate, cekpasangan, acak angka, status bot |
 | 💰 **Ekonomi** | Limit, uang, point, daily, shop, premium |
@@ -108,6 +108,22 @@ Fitur yang memakai limit ditandai dengan **🅛**. Setiap command punya biaya be
 ```
 
 ---
+
+## 🆕 Changelog (pembaruan terbaru)
+
+### 🎮 Game
+- **Rebutan jawaban** — semua game tebak-tebakan (`quiz`, `tebak*`, `hangman`, `asahotak`, `family100`, `math`, dll) sekarang bisa dijawab **siapa pun** di chat. Penjawab benar tercepat menang dan di-tag. `family100` direbut jawaban demi jawaban; `hangman` direbut huruf demi huruf. Hanya pemilik soal (atau owner) yang bisa `nyerah`.
+- **UNO** (2–10 pemain) — `.uno`, `.unojoin`, `.unostart`, `.unohand`, `.unoleave`, `.unostop`. Kartu dikirim lewat chat pribadi bot; kartu dimainkan dengan mengetik kodenya di grup (`r5`, `rs`, `rv`, `r+2`, `w r`, `w4 b`, `draw`, `pass`, `uno`). Ada aturan tangkap lupa-UNO (denda 2 kartu). Ketik `.uno help` untuk panduan lengkap.
+- **Timer game 2 menit** — `gameTimeout` di `config.js` kini `120000`. Teks waktu di soal & menu mengikuti nilai config (tidak perlu diedit manual). Giliran UNO juga 2 menit; dua kali timeout berturut-turut = dikeluarkan.
+- **Math soal cerita** — `.math` kini berupa soal cerita (3 level: `mudah`, `sedang`, `sulit`; hadiah menyesuaikan level). Mode hitungan polos tetap ada: `.math biasa`.
+- Pencocokan jawaban diperketat: jawaban pendek/angka harus persis, jawaban teks harus kata utuh (obrolan biasa tidak lagi "menjawab" tanpa sengaja).
+
+### 🎲 Fun
+- **`.cekkhodam [nama/@user]`** — khodam lucu-lucuan, hasil tetap sama untuk nama yang sama dalam satu hari.
+- **`.jodoh`, `.cekpasangan`, `.ship`** memakai emoji pasangan laki-laki + perempuan (👩‍❤️‍👨, 👫), bukan 💑 yang di sebagian perangkat tampil sebagai pasangan sejenis.
+
+### 👥 Grup
+- **`.afk <alasan>`** — tandai dirimu AFK. Bot memberi tahu orang yang men-tag/me-reply kamu (dengan jeda anti-spam) dan menyambutmu saat kamu kembali berbicara.
 
 ## 🆕 Changelog v7.3.0
 

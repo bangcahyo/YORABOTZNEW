@@ -68,7 +68,7 @@ module.exports = {
   // ═══════════════════════════════════════════════════════
   maxBet: 10000,
   minBet: 100,
-  gameTimeout: 60000,
+  gameTimeout: 120000,              // waktu menjawab/giliran game (ms) = 2 menit
 
   // ═══════════════════════════════════════════════════════
   //                    ANTI SPAM

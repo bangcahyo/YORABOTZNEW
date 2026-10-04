@@ -31,6 +31,9 @@ const { startDatabaseBackup, stopDatabaseBackup } = require('./lib/database-back
 const { getBannedUser, shouldNotifyBannedUser } = require('./lib/user-ban');
 const { executeWithProcessingReaction } = require('./lib/processing-reaction');
 const { handleTttInput } = require('./lib/ttt-game');
+const { handleUnoInput } = require('./lib/uno-handler');
+const { handleGameAnswer, formatDuration, SESSION_GAMES } = require('./lib/game-engine');
+const { processAfkMessage } = require('./lib/afk');
 
 const getUser = database.getUser;
 const updateUser = database.updateUser;
@@ -73,7 +76,7 @@ function setGameTimeout(roomId, cb) {
       delete gameState[roomId];
     }
     delete gameTimers[roomId];
-  }, config.gameTimeout || 60000);
+  }, config.gameTimeout || 120000);
 }
 
 function clearGameTimeout(roomId) {
@@ -112,7 +115,7 @@ const noLimitCommands = [
   'level', 'lvl', 'rank', 'peringkat', 'leaderboard', 'lb', 'top',
   'antilink', 'antispam', 'mute', 'unmute', 'welcome', 'setwelcome', 'setgoodbye',
   'kick', 'promote', 'demote', 'tagall', 'groupinfo',
-  'poll',
+  'poll', 'afk', 'brb',
   'id', 'groupid', 'cekid',
   'addlimit', 'addmoney', 'addpoint', 'setlimit', 'setmoney', 'resetuser',
   'broadcast', 'backup', 'backupdb', 'restore', 'restoredb', 'restoreyes', 'restoreno',
@@ -300,6 +303,7 @@ function buildContext(sock, msg, args) {
     spamTracker: spamTracker,
     gameState: gameState,
     gameTimers: gameTimers,
+    gameDurationText: formatDuration(config.gameTimeout || 120000),
     setGameTimeout: setGameTimeout,
     clearGameTimeout: clearGameTimeout,
     getLevelFromExp: level.getLevelFromExp,
@@ -595,6 +599,17 @@ async function startBot() {
         }
       }
 
+      // AFK: umumkan yang kembali & beri tahu kalau ada yang men-tag orang AFK.
+      if (isGroup(from)) {
+        try {
+          await processAfkMessage({
+            sock, msg, from, sender, text, prefix: config.prefix, loadDB, updateUser,
+          });
+        } catch (afkError) {
+          console.error('❌ AFK handler: ' + afkError.message);
+        }
+      }
+
       if (!text) return;
 
       // Anti-spam hanya menghitung command, bukan obrolan atau jawaban game.
@@ -636,100 +651,22 @@ async function startBot() {
         if (await handleTttInput(sock, msg, gameContext, text)) return;
       }
 
-      // AUTO-JAWAB GAME
-      if (gameState[from] && gameState[from].sender === sender) {
-        const g = gameState[from];
-        const lower = text.trim().toLowerCase();
+      // UNO — kartu dimainkan dengan mengetik kode tanpa prefix
+      if (gameState[from]?.game === 'uno') {
+        const unoContext = buildContext(sock, msg, []);
+        if (await handleUnoInput(sock, msg, unoContext, text)) return;
+      }
 
-        // NYERAH
-        if (lower === 'nyerah' || lower === 'menyerah' || lower === 'giveup' || lower === 'skip') {
-          clearGameTimeout(from);
-          let jawabanBenar = '';
-          if (g.game === 'tebakangka') jawabanBenar = g.angka;
-          else if (g.game === 'hangman') jawabanBenar = g.kata;
-          else if (Array.isArray(g.jawab)) jawabanBenar = g.jawab[0];
-          else if (g.jawab) jawabanBenar = g.jawab;
-
-          delete gameState[from];
-          await sock.sendMessage(from, {
-            text: '🏳️ *NYERAH!*\n\nJawaban: *' + jawabanBenar + '*\n\n_Coba lagi kapan-kapan!_',
-          });
-          return;
-        }
-
-        // HANGMAN — 1 huruf
-        if (g.game === 'hangman' && lower.length === 1 && /[a-z]/.test(lower)) {
-          const huruf = lower;
-          if (!g.tebakan.includes(huruf)) {
-            g.tebakan.push(huruf);
-            if (!g.kata.includes(huruf)) g.nyawa--;
-            const tampil = g.kata.split('').map(function(c) {
-              return g.tebakan.includes(c) ? c : '_';
-            }).join(' ');
-            const nyawaBar = '❤️'.repeat(g.nyawa) + '🖤'.repeat(6 - g.nyawa);
-
-            if (g.nyawa <= 0) {
-              clearGameTimeout(from);
-              delete gameState[from];
-              await sock.sendMessage(from, { text: '💀 *GAME OVER!*\nKata: *' + g.kata + '*' });
-              return;
-            }
-            if (!tampil.includes('_')) {
-              clearGameTimeout(from);
-              const u = getUser(sender);
-              updateUser(sender, { money: u.money + 1000, point: u.point + 5 });
-              delete gameState[from];
-              await sock.sendMessage(from, { text: '🎉 *MENANG!*\nKata: *' + g.kata + '*\n\n+Rp 1.000\n+5 Point' });
-              return;
-            }
-            await sock.sendMessage(from, {
-              text: '🎯 *HANGMAN*\n\nKata: ' + tampil + '\nNyawa: ' + nyawaBar + '\nHuruf: ' + g.tebakan.join(', '),
-            });
-            return;
-          }
-        }
-
-        // CEK JAWABAN
-        const accepted = Array.isArray(g.jawab) ? g.jawab : [g.jawab];
-        const isCorrect = accepted.some(function(j) {
-          const cleanJ = String(j).toLowerCase().trim();
-          return lower === cleanJ || lower.includes(cleanJ);
+      // AUTO-JAWAB GAME — REBUTAN: siapa pun di chat boleh menjawab,
+      // yang benar paling cepat menang.
+      if (gameState[from] && !SESSION_GAMES.has(gameState[from].game)) {
+        const handled = await handleGameAnswer({
+          sock, msg, from, sender, text,
+          gameState, clearGameTimeout,
+          getUser, updateUser, formatMoney, config,
+          isOwnerSender: ownerSender,
         });
-
-        if (isCorrect) {
-          clearGameTimeout(from);
-          const u = getUser(sender);
-          const rewards = {
-            tebakangka: [5, 500],
-            quiz: [10, 1000],
-            tebakkata: [3, 750],
-            math: [2, 500],
-            tebakemoji: [3, 800],
-            hangman: [5, 1000],
-            tebakibukota: [3, 700],
-            tebakfilm: [4, 900],
-            tebakpemainbola: [4, 900],
-            tebaklagu: [4, 900],
-            tebakgambar: [3, 800],
-            tebakbendera: [3, 700],
-            tebaksurah: [4, 900],
-            tebakpresiden: [4, 900],
-            tebakplanet: [3, 700],
-            tebakanime: [4, 900],
-            asahotak: [3, 700],
-            siapakahaku: [3, 750],
-            caklontong: [3, 800],
-            lengkapikalimat: [3, 750],
-            family100: [4, 900],
-          };
-          const rw = rewards[g.game] || [3, 500];
-          updateUser(sender, { point: u.point + rw[0], money: u.money + rw[1] });
-          delete gameState[from];
-          await sock.sendMessage(from, {
-            text: '🎉 *BENAR!*\n\n+' + rw[0] + ' Point\n+' + formatMoney(rw[1]),
-          });
-          return;
-        }
+        if (handled) return;
       }
 
       // RANDOM QUESTION
@@ -849,6 +786,13 @@ async function startBot() {
             'Grup/Chat: *' + from + '*');
         }
         return;
+      }
+
+      // Jangan timpa sesi multi-pemain (UNO / Tic Tac Toe) dengan soal tebak-tebakan baru.
+      if (plugin.startsGame && gameState[from] && SESSION_GAMES.has(gameState[from].game) && plugin.name !== 'uno') {
+        return sock.sendMessage(from, {
+          text: '🎮 Masih ada permainan yang berjalan di chat ini. Selesaikan dulu permainan itu (UNO bisa dihentikan host dengan ' + config.prefix + 'unostop).',
+        }, { quoted: msg });
       }
 
       // EXECUTE
